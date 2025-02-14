@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/judo-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset=".github/judo.svg">
-  <img alt="Charisma" src=".github/judo.svg" width="360px">
+  <img alt="Judo" src=".github/judo.svg" width="360px">
 </picture>
 
 **Judo** is a JSON and JSON5 parser with MISRA C:2012 conformance.
