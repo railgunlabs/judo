@@ -1,0 +1,82 @@
+#[=======================================================================[.rst:
+FindJudo
+------------
+
+Finds the Judo library.
+
+Imported Targets
+^^^^^^^^^^^^^^^^
+
+This module provides the following imported targets, if found:
+
+``Railgun::Judo``
+  The Judo library
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+This will define the following variables:
+
+``JUDO_FOUND``
+  True if the system has the Judo library.
+``JUDO_VERSION``
+  The version of the Judo library which was found.
+``JUDO_INCLUDE_DIRS``
+  Include directories needed to use Judo.
+``JUDO_LIBRARIES``
+  Libraries needed to link to Judo.
+
+Cache Variables
+^^^^^^^^^^^^^^^
+
+The following cache variables may also be set:
+
+``JUDO_INCLUDE_DIR``
+  The directory containing ``judo.h``.
+``JUDO_LIBRARY``
+  The path to the Judo library.
+
+#]=======================================================================]
+
+# On Windows the header and library are installed in the same directory as this
+# script is therefore the following function is called to obtain its path.
+get_filename_component(JUDO_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" DIRECTORY)
+
+# Find header.
+find_path(JUDO_INCLUDE_DIR judo.h
+          HINTS /usr/local/include /usr/include ${JUDO_CONFIG_DIR})
+
+# Find library.
+find_library(JUDO_LIBRARY
+             NAMES Judo judo
+             HINTS /usr/local/lib /usr/lib ${JUDO_CONFIG_DIR})
+
+# Not needed anymore.
+unset(JUDO_CONFIG_DIR)
+
+# Use version specified in top-level CMakeLists.txt
+set(JUDO_VERSION "@PROJECT_VERSION@")
+
+# Handle the QUIETLY and REQUIRED arguments and set JUDO_FOUND to TRUE if all listed variables are TRUE.
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Judo
+                                  FOUND_VAR JUDO_FOUND
+                                  REQUIRED_VARS JUDO_LIBRARY JUDO_INCLUDE_DIR
+                                  VERSION_VAR JUDO_VERSION)
+
+# Set result variables.
+if(JUDO_FOUND)
+    set(JUDO_LIBRARIES ${JUDO_LIBRARY})
+    set(JUDO_INCLUDE_DIRS ${JUDO_INCLUDE_DIR})
+endif()
+
+# Export a module.
+if(JUDO_FOUND AND NOT TARGET Railgun::Judo)
+    add_library(Railgun::Judo UNKNOWN IMPORTED)
+    set_target_properties(Railgun::Judo PROPERTIES
+                          IMPORTED_LOCATION "${JUDO_LIBRARY}"
+                          INTERFACE_INCLUDE_DIRECTORIES "${JUDO_INCLUDE_DIR}")
+endif()
+
+# Cached variables should be hidden in the CMake interface unless the user explicitly asks to edit them.
+mark_as_advanced(JUDO_INCLUDE_DIR JUDO_LIBRARY)

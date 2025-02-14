@@ -1,0 +1,78 @@
+.TH "JUDO" "1" "Feb 1st 2025" "Judo 1.0.0"
+.SH NAME
+judo \- JSON parser and pretty printer
+.\" --------------------------------------------------------------------------
+.SH SYNOPSIS
+.SY judo
+.OP \-\-quite
+.OP \-\-pretty
+.OP \-\-indent=\fIN\fR
+.OP \-\-tabs
+.OP \-\-escape
+.YS
+.SY judo
+.B \-\-version
+.YS
+.SY judo
+.B \-\-help
+.YS
+(See the OPTIONS section for details.)
+.\" --------------------------------------------------------------------------
+.SH DESCRIPTION
+Judo is a command-line interface to the C library of the same name.
+This program reads JSON from \fCstdin\fR and writes it back to \fCstdout\fR, optionally pretty printing it.
+Errors are written to \fCstderr\fR.
+Column indices are reported relative to the code point (not the code unit or grapheme cluster).
+.\" --------------------------------------------------------------------------
+.SH OPTIONS
+.TP
+.BR \-q
+.TQ
+.BR \-\-quite
+Do not print to \fCstdout\fR.
+Use the exit status to check for success or errors.
+.TP
+.BR \-p
+.TQ
+.BR \-\-pretty
+Print the JSON in a visually appealing way.
+.TP
+.BR \-i " \fIN\fP"
+.TQ
+.BR \-\-indent "=\fIN\fP"
+Set the indention width to \fIN\fR spaces when pretty printing with spaces (default is 4).
+.TP
+.BR \-t
+.TQ
+.BR \-\-tabs
+Indent with tabs instead of spaces when pretty printing.
+.TP
+.BR \-\-help
+Display a help message and exit.
+.TP
+.BR \-\-version
+Output version information and exit.
+.\" --------------------------------------------------------------------------
+.SH EXIT STATUS
+The exit status is 0 on success, 1 if the JSON input is malformed, 2 if an error occured while processing the JSON input, and 3 if an invalid command-line option was specified.
+.\" --------------------------------------------------------------------------
+.SH SEE ALSO
+.BR judo (3)
+.\" --------------------------------------------------------------------------
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.\" --------------------------------------------------------------------------
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.\" --------------------------------------------------------------------------
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

@@ -1,0 +1,33 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_gettype \- type of a JSON value
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "enum judo_type judo_gettype(const judo_value *" value ");"
+.fi
+.SH DESCRIPTION
+The \f[B]judo_gettype\f[R](3) function returns the JSON type of \f[I]value\f[R].
+The pointer to \f[I]value\f[R] must not be NULL otherwise the behavior is undefined.
+.SH RETURN VALUE
+The JSON type of \f[I]value\f[R].
+.SH SEE ALSO
+.BR judo_value (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

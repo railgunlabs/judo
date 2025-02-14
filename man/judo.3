@@ -1,0 +1,378 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo.h \- embeddable JSON Parser
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.fi
+.SH DESCRIPTION
+Embeddable JSON Parser.
+.SS Scanner
+The Judo scanner processes JSON source text into semantic elements.
+Semantic elements are notable marker points within the JSON stream that may or may not correspond with a JSON token.
+You can find semantic elements with the \f[B]judo_scan\f[R](3) function, which returns them one-at-a-time.
+This function is intended to be called repeatedly until all semantic elements have been processed or an error halts the scanner.
+.PP
+The JSON source text must be encoded as UTF-8.
+It can be null or none-null terminated.
+In the following code snippet, a null-terminated string is defined:
+.PP
+.in +4n
+.EX
+const char *json = "{\\"abc\\":123}";
+.EE
+.in
+.PP
+To scan this string, you need the \f[B]judo_stream\f[R](3) structure.
+This structure represents the current state of the JSON scanner.
+It must be zero initialized before its first use.
+.PP
+.in +4n
+.EX
+struct judo_stream stream = {0};
+.EE
+.in
+.PP
+Next, it’s time to find semantic elements by repeatedly calling the \f[B]judo_scan\f[R](3) function.
+In the subsequent code snippet, \f[B]judo_scan\f[R](3) is called repeatedly until all semantic elements have been processed or an error aborts scanning.
+.PP
+.in +4n
+.EX
+enum judo_result result;
+for (;;) {
+    result = judo_scan(&stream, json, -1);
+     if (result == JUDO_SUCCESS) {
+        if (stream.element == JUDO_EOF) {
+            // successfully completed scanning
+        }
+    } else {
+        // an error occured
+    }
+}
+.EE
+.in
+.PP
+After each call to \f[B]judo_scan\f[R](3), you can inspect certain fields of the \f[B]judo_stream\f[R](3) structure.
+These fields are \f[I]element\f[R], \f[I]where\f[R], \f[I]length\f[R], and \f[I]error\f[R].
+.PP
+The value of the \f[I]element\f[R] field is one of the \f[B]judo_element\f[R](3) enumeration constants.
+It describes the semantic element that was just processed.
+.PP
+The \f[I]where\f[R] and \f[I]length\f[R] fields describe the span of UTF-8 code units where the semantic element was found in the source text.
+In the case of literal values, like numbers and strings, the span of code units defines its lexeme.
+.PP
+The \f[I]error\f[R] field is a null-terminated UTF-8 encoded string that describes the details of any error in US English.
+You’ll know an error occurred because \f[B]judo_scan\f[R](3) will return a value other than \f[B]JUDO_SUCCESS\f[R].
+.SS Processing semantic elements
+.PP
+Arrays and objects consist of push/pop element pairs.
+Conceptually, these pairs are like a stack data structure where every “push” is matched by a “pop” element.
+.PP
+Elements of an array are returned as sequential values.
+Members of an object are returned as element pairs: a name is returned first, then the value is returned next.
+.SS Extracting numeric values
+.PP
+When a semantic element is a number its floating point value can be obtained with the \f[B]judo_numberify\f[R](3) function.
+This function accepts a \f[B]judo_number\f[R](3) which is a floating point storage type chosen when configuring the Judo library.
+.PP
+.in +4n
+.EX
+judo_number number;
+judo_numberify(&source[stream.where], stream.length, &number);
+.EE
+.in
+.PP
+.SS Extracting string values
+.PP
+When a semantic element is a string or object name the decoded string value can be obtained with the \f[B]judo_stringify\f[R](3) function.
+This function accepts a buffer to write the decoded string data to, as well as a “length” parameter for the buffer.
+The length parameter represents the buffer’s capacity on input.
+The implementation will update this parameter with the number of code units written to the buffer on output.
+.PP
+.in +4n
+.EX
+char buf[32];
+int32_t buflen = sizeof(buf);
+judo_stringify(&source[stream.where], stream.length, buf, &buflen);
+.EE
+.in
+.PP
+The resulting buffer is not null-terminated.
+This is because JSON strings can contain encoded zero bytes, which are decoded and placed as literal zero bytes in the resulting buffer.
+Therefore, you must rely on the number of code units written to the buffer length parameter to determine the length of the resulting buffer.
+.PP
+To compute the required size of the destination buffer, first call \f[B]judo_stringify\f[R](3) with a null buffer and a zero buffer length.
+The implementation will update the buffer length parameter with the number of code units needed to represent the fully decoded string.
+You can then call the function again with a buffer of the appropriate size.
+.PP
+.in +4n
+.EX
+buflen = 0;
+judo_stringify(&source[stream.where], stream.length, NULL, &buflen);
+.EE
+.in
+.PP
+.SS Handling errors
+.PP
+If an error occurs, then the \f[B]judo_scan\f[R](3) function will return a \f[B]judo_result\f[R](3) other than \f[B]JUDO_SUCCESS\f[R].
+The result code indicates the general classification of the error, e.g. syntax error, bad encoding, etc.
+Regardless of the error code, the \f[I]error\f[R] field of the \f[B]judo_stream\f[R](3) structure will be populated with a UTF-8 encoded error message written in US English.
+.PP
+Additionally, the \f[I]where\f[R] and \f[I]length\f[R] fields will be populated with the code unit index and count which together communicate the span of code units where the error was detected in the JSON source text.
+The span can be used to derive line and column numbers for more detailed error reporting.
+.SS Saving state
+.PP
+The Judo scanner does not use global state, static storage, or dynamic memory allocation.
+Its implementation is thread-safe and all functions are idempotent.
+.PP
+The entire scanner state is maintained by the \f[B]judo_stream\f[R](3) structure.
+Instances of this structure can be copied with \f[B]memcpy\f[R](3) to preserve an earlier state.
+.TS
+tab(;);
+l l.
+\fBFunctions\fR;\fBDescription\fR
+_
+\fBjudo_scan\fR(3);T{
+Incrementally scan JSON.
+T}
+\fBjudo_stringify\fR(3);T{
+Lexeme to decoded string.
+T}
+\fBjudo_numberify\fR(3);T{
+Lexeme to float.
+T}
+
+.T&
+l l.
+\fBDefines\fR;\fBDescription\fR
+_
+\fBJUDO_MAXDEPTH\fR(3);T{
+Maximum nesting depth.
+T}
+\fBJUDO_ERRMAX\fR(3);T{
+Maximum error description length.
+T}
+
+.T&
+l l.
+\fBEnumerations\fR;\fBDescription\fR
+_
+\fBjudo_result\fR(3);T{
+Function status code.
+T}
+\fBjudo_element\fR(3);T{
+Semantic element.
+T}
+.TE
+.SS Parser
+The Judo parser builds an in-memory tree structure from JSON source text.
+The “root” of the tree is the top-level JSON value, which is often an object or array.
+From the root, you can traverse the tree and inspect its values.
+.PP
+The \f[B]judo_parse\f[R](3) function parses JSON source text, encoded as UTF-8, into a tree.
+The source text can be null or non-null terminated.
+In the subsequent example, it is null terminated which is communicated by passing \f[C]-1\f[R] to the functions \f[C]length\f[R] parameter.
+.PP
+Once the tree has been processed, you must free it with \f[B]judo_free\f[R](3).
+.PP
+.in +4n
+.EX
+const char *json = "{\\"abc\\":123}";
+struct judo_value *root = NULL;
+enum judo_result result = judo_parse(json, -1, &root, NULL, NULL, memfunc);
+if (result == JUDO_SUCCESS) {
+    // Process the tree here, then
+    // free it once you're done.
+    judo_free(root, NULL, memfunc);
+}
+.EE
+.in
+.PP
+The Judo parser requires a dynamic memory allocator, which you must implement yourself.
+The previous code snippet used \f[C]memfunc\f[R] to refer to the implied memory allocator function.
+.SS Handling errors
+.PP
+If an error occurs, then \f[B]judo_parse\f[R](3) will return an error code (a result code other than \f[B]JUDO_SUCCESS\f[R]).
+The result code indicates the general classification of the error, e.g. syntax error, bad encoding, etc.
+Regardless of the error code, the \f[B]judo_error\f[R](3) argument, if provided, will be populated with details about the error.
+.SS Processing the in-memory tree
+.PP
+The type of the JSON root, as well as every other value in the tree, is represented by the opaque type \f[B]judo_value\f[R](3).
+You can inspect the type with the \f[B]judo_gettype\f[R](3) function.
+For example, if a value represents the JSON \f[C]null\f[R] type, then \f[B]judo_gettype\f[R](3) with return \f[B]JUDO_TYPE_NULL\f[R].
+.PP
+In JSON, the \f[C]null\f[R] type is a simple type.
+That is, there is no additional information associated with it.
+However, other JSON types (e.g. arrays and objects), do have additional data.
+For example, arrays have elements and objects have members associated with them.
+Inspecting these values is explored in the following subsections.
+.SS Boolean values
+.PP
+If a value represents a boolean type, then \f[B]judo_gettype\f[R](3) will return \f[B]JUDO_TYPE_BOOL\f[R].
+Once you know a value is a boolean type, you can use \f[B]judo_tobool\f[R](3) to determine whether it is \f[C]true\f[R] or \f[C]false\f[R].
+.PP
+.in +4n
+.EX
+if (judo_gettype(root) == JUDO_TYPE_BOOL) {
+    if (judo_tobool(root)) {
+        // 'true'
+    } else {
+        // 'false'
+    }
+}
+.EE
+.in
+.PP
+.SS Numeric values
+.PP
+If a value represents a number type, then \f[B]judo_gettype\f[R](3) will return \f[B]JUDO_TYPE_NUMBER\f[R].
+You can query the lexeme of the number with the \f[B]judo_value2span\f[R](3) function.
+Once you have the lexeme, you can use \f[B]judo_numberify\f[R](3) to convert it into a floating-point value.
+.PP
+.in +4n
+.EX
+if (judo_gettype(root) == JUDO_TYPE_NUMBER) {
+    int32_t index, length;
+    if (judo_value2span(root, &index, &length) == JUDO_SUCCESS) {
+        // Use the lexeme span to extract the float value.
+    }
+}
+.EE
+.in
+.PP
+.SS String values
+.PP
+If a value represents a string type, then \f[B]judo_gettype\f[R](3) will return \f[B]JUDO_TYPE_STRING\f[R].
+You can query the lexeme of the string with the \f[B]judo_value2span\f[R](3) function.
+Once you have the lexeme, you can use \f[B]judo_stringify\f[R](3) to decode it.
+.PP
+.in +4n
+.EX
+if (judo_gettype(root) == JUDO_TYPE_STRING) {
+    int32_t index, length;
+    if (judo_value2span(root, &index, &length) == JUDO_SUCCESS) {
+        // Use the lexeme span to decode the string.
+    }
+}
+.EE
+.in
+.PP
+.SS Array values
+.PP
+If a value represents an array type, then \f[B]judo_gettype\f[R](3) will return \f[B]JUDO_TYPE_ARRAY\f[R].
+You can iterate the elements of an array with the \f[B]judo_first\f[R](3) and \f[B]judo_next\f[R](3) functions.
+.PP
+The \f[B]judo_first\f[R](3) function returns the first element of the array.
+If the array is empty, then it will return NULL. You can call \f[B]judo_next\f[R](3) on any array element to retrieve the next element.
+If \f[B]judo_next\f[R](3) returns NULL, then there are no more elements.
+.PP
+.in +4n
+.EX
+if (judo_gettype(root) == JUDO_TYPE_ARRAY) {
+    struct judo_value *element = judo_first(root);
+    while (element != NULL) {
+        // Process the current element, then
+        // grab to the next element.
+        element = judo_next(element);
+    }
+}
+.EE
+.in
+.PP
+You can query how many elements are in an array with \f[B]judo_len\f[R](3).
+.SS Object values
+.PP
+If a value represents an object type, then \f[B]judo_gettype\f[R](3) will return \f[B]JUDO_TYPE_OBJECT\f[R].
+You can iterate the members of an object with the \f[B]judo_membfirst\f[R](3) and \f[B]judo_membnext\f[R](3) functions.
+.PP
+The \f[B]judo_membfirst\f[R](3) function returns the first member of the object.
+If the object has no members, then it will return NULL. You can call \f[B]judo_membnext\f[R](3) on any object member to retrieve the next member.
+If \f[B]judo_membnext\f[R](3) returns NULL, then there are no more members.
+.PP
+.in +4n
+.EX
+if (judo_gettype(root) == JUDO_TYPE_OBJECT) {
+    struct judo_member *member = judo_membfirst(root);
+    while (member != NULL) {
+        // Process the current member, then
+        // grab to the next member.
+        member = judo_membnext(member);
+    }
+}
+.EE
+.in
+.PP
+You can query how many members are in an object with \f[B]judo_len\f[R](3).
+.PP
+You can retrieve the name and value of a member with the \f[B]judo_name2span\f[R](3) and \f[B]judo_membvalue\f[R](3) functions, respectively.
+.PP
+The JSON specification does not require member names to be unique.
+Therefore, Judo allows multiple members with the same name within a single object.
+If this behavior is undesirable, application developers should detect and handle duplicates accordingly
+.TS
+tab(;);
+l l.
+\fBFunctions\fR;\fBDescription\fR
+_
+\fBjudo_parse\fR(3);T{
+Build an in-memory tree.
+T}
+\fBjudo_free\fR(3);T{
+Free the in-memory tree.
+T}
+\fBjudo_gettype\fR(3);T{
+Type of a JSON value.
+T}
+\fBjudo_tobool\fR(3);T{
+Boolean value.
+T}
+\fBjudo_len\fR(3);T{
+Array or object length.
+T}
+\fBjudo_first\fR(3);T{
+First array element.
+T}
+\fBjudo_next\fR(3);T{
+Next array element.
+T}
+\fBjudo_membfirst\fR(3);T{
+First object member.
+T}
+\fBjudo_membnext\fR(3);T{
+Next object member.
+T}
+\fBjudo_membvalue\fR(3);T{
+Member value.
+T}
+\fBjudo_name2span\fR(3);T{
+Member name lexeme.
+T}
+\fBjudo_value2span\fR(3);T{
+Value lexeme.
+T}
+
+.T&
+l l.
+\fBEnumerations\fR;\fBDescription\fR
+_
+\fBjudo_type\fR(3);T{
+JSON value type.
+T}
+.TE
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

@@ -1,0 +1,36 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_len \- array or object length
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "int32_t judo_len(const judo_value *" value ");"
+.fi
+.SH DESCRIPTION
+The \f[B]judo_len\f[R](3) function returns the number of elements or members of an array or object, depending on the type of \f[I]value\f[R].
+If \f[I]value\f[R] is an array type, the implementation returns the array’s length.
+If \f[I]value\f[R] is an object type, the implementation returns the number of members the object has.
+For any other JSON type, a negative integer is returned.
+.SH RETURN VALUE
+The number of elements or members of an array or object, depending on the JSON type of \f[I]value\f[R], or a negative integer indicating \f[I]value\f[R] is of a JSON type that has no length.
+.SH SEE ALSO
+.BR judo_type (3),
+.BR judo_value (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

@@ -1,0 +1,69 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+*.msi
+
+# Visual Studio temporary files
+*.suo
+*.user
+*.sbr
+*.pdb
+*.ncb
+*.sdf
+*.idb
+
+# Autotools
+Makefile
+Makefile.in
+autom4te*
+aclocal.m4
+config
+configure
+configure~
+config.log
+config.status
+libtool
+stamp-h1
+.dirstamp
+.deps
+*.tar.gz
+*.gz
+judo_config.h
+
+# Mac OS X
+.DS_Store
+
+# CMake out-of-source build files
+build
+
+# pkg-config files
+judo.pc
+
+# Generated executable files
+src/judo
+examples/scanner
+examples/parser
+
+# Cppcheck generate files
+results.xml
+cppcheck-*
+*.dump

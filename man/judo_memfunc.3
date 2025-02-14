@@ -1,0 +1,54 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_memfunc \- memory manager
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "typedef void *(*judo_memfunc)(void *user_data, void *" ptr ", size_t " size ");"
+.fi
+.SH DESCRIPTION
+This typedef defines the function signature for a custom memory management implementation.
+The memory manager is responsible for allocating and freeing memory.
+The implementation must behave like \f[B]malloc\f[R](3) or \f[B]free\f[R](3) depending upon its arguments.
+.PP
+When \f[I]ptr\f[R] is NULL, then the allocator must behave like \f[B]malloc\f[R](3).
+When \f[I]ptr\f[R] is not NULL, then the allocator must behave like \f[B]free\f[R](3).
+The value of \f[I]size\f[R] is either the number of bytes to allocate or the number of bytes being freed, depending on if the allocator is behaving like \f[B]malloc\f[R](3) or \f[B]free\f[R](3).
+.PP
+The \f[C]ud\f[R] argument is a user data pointer passed through as-is from \f[B]judo_parse\f[R](3) and \f[B]judo_free\f[R](3).
+.SH EXAMPLES
+A minimal implementation that uses the C standard memory management routines might resemble the following code snippet.
+.PP
+.in +4n
+.EX
+void *memfunc(void *ud, void *ptr, size_t size) {
+    if (ptr == NULL) {
+        return malloc(size);
+    } else {
+        free(ptr);
+        return NULL;
+    }
+}
+.EE
+.in
+.SH SEE ALSO
+.BR judo_parse (3),
+.BR judo_free (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

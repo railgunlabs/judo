@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: judo
+Description: Secure JSON and JSON5 parser
+Version: @VERSION@
+URL: https://railgunlabs.com/judo/
+
+Cflags: -I${includedir}
+Libs: -L${libdir} -ljudo

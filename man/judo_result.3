@@ -1,0 +1,69 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_result \- function status code
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.B enum judo_result {
+.RS
+.B JUDO_SUCCESS,
+.B JUDO_BAD_SYNTAX,
+.B JUDO_NO_BUFFER_SPACE,
+.B JUDO_ILLEGAL_BYTE_SEQUENCE,
+.B JUDO_OUT_OF_RANGE,
+.B JUDO_INVALID_OPERATION,
+.B JUDO_MAXIMUM_NESTING,
+.B JUDO_OUT_OF_MEMORY,
+.B JUDO_MALFUNCTION,
+.RE
+.B };
+.fi
+.SH DESCRIPTION
+Most functions in the Judo API return one of these enumeration values.
+Those that don’t are higher-level, inspection-oriented APIs that operate on already derived data.
+.SH CONSTANTS
+.TP
+.BR JUDO_SUCCESS
+Operation successful.
+.TP
+.BR JUDO_BAD_SYNTAX
+Source text malformed.
+.TP
+.BR JUDO_NO_BUFFER_SPACE
+Insufficient buffer space.
+.TP
+.BR JUDO_ILLEGAL_BYTE_SEQUENCE
+Malformed Unicode encoded character.
+.TP
+.BR JUDO_OUT_OF_RANGE
+The value cannot be represented by the storage type.
+.TP
+.BR JUDO_INVALID_OPERATION
+Illegal API usage.
+.TP
+.BR JUDO_MAXIMUM_NESTING
+The JSON structure exceeds the maximum nesting depth.
+.TP
+.BR JUDO_OUT_OF_MEMORY
+Dynamic memory allocation failed.
+.TP
+.BR JUDO_MALFUNCTION
+Defect in the implementation.
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

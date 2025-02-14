@@ -1,0 +1,35 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_next \- next array element
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "judo_value *judo_next(judo_value *" value ");"
+.fi
+.SH DESCRIPTION
+Retrieves the next element of an array from \f[I]value\f[R], which must be an element of an array.
+If \f[I]value\f[R] is NULL or it’s the last element of the array, then NULL is returned.
+To ensure that \f[I]value\f[R] is always an element of an array, only pass elements to this function that were retrieved from either \f[B]judo_first\f[R](3) or \f[B]judo_next\f[R](3).
+.SH RETURN VALUE
+The next element in an array or NULL if \f[I]value\f[R] is NULL, the last element, or not an element of an array.
+.SH SEE ALSO
+.BR judo_first (3),
+.BR judo_value (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

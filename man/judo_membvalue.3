@@ -1,0 +1,34 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_membvalue \- member value
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "judo_value *judo_membvalue(judo_member *" member ");"
+.fi
+.SH DESCRIPTION
+The \f[B]judo_membvalue\f[R](3) function returns the value of \f[I]member\f[R].
+To retrieve the name of \f[I]member\f[R], use \f[B]judo_name2span\f[R](3).
+.SH RETURN VALUE
+The value of \f[I]member\f[R] or NULL if \f[I]member\f[R] is NULL.
+.SH SEE ALSO
+.BR judo_name2span (3),
+.BR judo_member (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

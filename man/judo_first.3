@@ -1,0 +1,36 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_first \- first array element
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "judo_value *judo_first(judo_value *" value ");"
+.fi
+.SH DESCRIPTION
+The \f[B]judo_first\f[R](3) function retrieves the first element of \f[I]value\f[R], which must be an array.
+If \f[I]value\f[R] is NULL, not an array, or is an empty array, then NULL is returned.
+Check if \f[I]value\f[R] is an array with \f[B]judo_gettype\f[R](3) and non-empty with \f[B]judo_len\f[R](3).
+.SH RETURN VALUE
+The first element of the array or NULL if \f[I]value\f[R] is NULL, not an array, or an empty array.
+.SH SEE ALSO
+.BR judo_gettype (3),
+.BR judo_len (3),
+.BR judo_value (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

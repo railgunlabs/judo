@@ -1,0 +1,37 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_value2span \- value lexeme
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "enum judo_result judo_value2span(const judo_value *" value ", int32_t *" lexeme ", int32_t *" length ");"
+.fi
+.SH DESCRIPTION
+The \f[B]judo_value2span\f[R](3) function populates \f[I]lexeme\f[R] and \f[I]length\f[R] with the span of code units of the lexeme of \f[I]value\f[R] in the JSON source text.
+.SH RETURN VALUE
+.TP
+JUDO_SUCCESS
+If the lexeme was extracted successfully.
+.TP
+JUDO_INVALID_OPERATION
+If \f[I]value\f[R], \f[I]lexeme\f[R], or \f[I]length\f[R] are NULL.
+.SH SEE ALSO
+.BR judo_value (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

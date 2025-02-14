@@ -1,0 +1,33 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_membnext \- next object member
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "judo_member *judo_membnext(judo_member *" member ");"
+.fi
+.SH DESCRIPTION
+Retrieves the next member of an object after \f[I]member\f[R].
+If \f[I]member\f[R] is NULL or it’s the last member of the object, then NULL is returned.
+.SH RETURN VALUE
+The next member in the object or NULL if \f[I]member\f[R] is NULL or the last member.
+.SH SEE ALSO
+.BR judo_member (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

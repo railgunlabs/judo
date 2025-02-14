@@ -1,0 +1,63 @@
+/*
+ *  Judo - Embeddable JSON and JSON5 parser.
+ *  Copyright (c) 2025 Railgun Labs, LLC
+ *
+ *  This software is dual-licensed: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License version 3
+ *  as published by the Free Software Foundation. For the terms of this
+ *  license, see <https://www.gnu.org/licenses/>.
+ *
+ *  Alternatively, you can license this software under a proprietary
+ *  license, as set out in <https://railgunlabs.com/judo/license/>.
+ */
+
+#ifndef JUDO_CONFIG_H
+#define JUDO_CONFIG_H
+
+#define JUDO_MAXDEPTH @MAXIMUM_NESTING_DEPTH@
+
+#if @WITH_COMMENTS@
+#define JUDO_WITH_COMMENTS
+#endif
+
+#if @WITH_TRAILING_COMMAS@
+#define JUDO_WITH_TRAILING_COMMAS
+#endif
+
+#if @ENABLE_RFC4627@
+#define JUDO_RFC4627
+#endif
+
+#if @ENABLE_RFC8259@
+#define JUDO_RFC8259
+#endif
+
+#if @ENABLE_JSON5@
+#define JUDO_JSON5
+#endif
+
+#if @ENABLE_PARSER@
+#define JUDO_PARSER
+#endif
+
+#if @HAVE_FLOAT@
+#define JUDO_FLOAT_FLOAT
+#elif @HAVE_DOUBLE@
+#define JUDO_FLOAT_DOUBLE
+#elif @HAVE_LONGDOUBLE@
+#define JUDO_FLOAT_LONGDOUBLE
+#endif
+
+#if defined(JUDO_FLOAT_FLOAT)
+typedef float judo_number;
+#elif defined(JUDO_FLOAT_DOUBLE)
+typedef double judo_number;
+#elif defined(JUDO_FLOAT_LONGDOUBLE)
+typedef long double judo_number;
+#endif
+
+#if defined(JUDO_FLOAT_FLOAT) || defined(JUDO_FLOAT_DOUBLE) || defined(JUDO_FLOAT_LONGDOUBLE)
+#define JUDO_HAVE_FLOATS
+#endif
+
+#endif

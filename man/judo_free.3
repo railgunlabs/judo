@@ -1,0 +1,46 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_free \- free the in-memory tree
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "enum judo_result judo_free(judo_value *" root ", void *" user_data ", judo_memfunc " memfunc ");"
+.fi
+.SH DESCRIPTION
+The \f[B]judo_free\f[R](3) function releases memory associated with \f[I]root\f[R] using \f[I]memfunc\f[R].
+The \f[I]root\f[R] must reference the root of the tree as returned by \f[B]judo_parse\f[R](3) otherwise the behavior is undefined (do not attempt to free any value other than the root of the tree).
+.PP
+The \f[I]memfunc\f[R] function must implement a memory allocator as described in \f[B]judo_memfunc\f[R](3).
+The \f[I]user_data\f[R] pointer is passed to \f[I]memfunc\f[R] as-is.
+.SH RETURN VALUE
+.TP
+JUDO_SUCCESS
+If \f[I]root\f[R] was freed successfully.
+.TP
+JUDO_INVALID_OPERATION
+If \f[I]memfunc\f[R] is NULL.
+.TP
+JUDO_MALFUNCTION
+If there is a defect in the implementation.
+.SH SEE ALSO
+.BR judo_parse (3),
+.BR judo_memfunc (3),
+.BR judo_value (3)
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .

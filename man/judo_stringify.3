@@ -1,0 +1,48 @@
+.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.SH NAME
+judo_stringify \- lexeme to decoded string
+.SH LIBRARY
+Embeddable JSON parser (libjudo, -ljudo)
+.SH SYNOPSIS
+.nf
+.B #include <judo.h>
+.PP
+.BI "enum judo_result judo_stringify(const char *" lexeme ", int32_t " length ", char *" buf ", int32_t *" buflen ");"
+.fi
+.SH DESCRIPTION
+The \f[B]judo_stringify\f[R](3) function decodes (i.e. unescapes) the string or object member name referenced by \f[I]lexeme\f[R] and writes it to \f[I]buf\f[R].
+The number of code units in \f[I]lexeme\f[R] is specified by \f[I]length\f[R].
+.PP
+The \f[I]buflen\f[R] parameter must be the capacity of \f[I]buf\f[R].
+The implementation will update \f[I]buflen\f[R] with the number of code units written to \f[I]buf\f[R].
+.PP
+If \f[I]buf\f[R] is null, then \f[I]buflen\f[R] must be zero and the implementation will write to \f[I]buflen\f[R] the number of code units in the decoded lexeme.
+Calling the function this way is useful for calculating the total size of \f[I]buf\f[R].
+.SH RETURN VALUE
+.TP
+JUDO_SUCCESS
+If the numeric value was written to \f[C]number\f[R].
+.TP
+JUDO_INVALID_OPERATION
+If \f[C]stream\f[R], \f[C]string\f[R], or \f[C]number\f[R] are NULL.
+.TP
+JUDO_NO_BUFFER_SPACE
+If \f[I]buf\f[R] is too small to accommodate the string.
+.TP
+JUDO_MALFUNCTION
+If there is a defect in the implementation.
+.SH AUTHOR
+.UR https://railgunlabs.com
+Railgun Labs
+.UE .
+.SH INTERNET RESOURCES
+The online documentation is
+.UR https://railgunlabs.com/judo
+published here
+.UE .
+.SH LICENSING
+Judo is Free Software distributed under the GNU General Public License version 3 as published by the Free Software Foundation.
+Alternatively, you can license the library under a proprietary license, as set out on the
+.UR https://railgunlabs.com/judo/license/
+Railgun Labs website
+.UE .
