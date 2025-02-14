@@ -39,7 +39,7 @@ It can detect malformed UTF-8 sequences and problematic conditions not fully spe
 ## MISRA C:2012 Conformance
 
 The Judo scanner honors all Mandatory, Required, and Advisory rules defined by MISRA C:2012, including Rule 17.2, which requires all functions to be non-recursive.
-As a result, Judo does not implement a recursive scanner.
+As a result, Judo does not implement a recursive scanner or parser.
 
 The optional Judo parser honors all MISRA rules except Advisory Rules 11.5 and 19.2.
 If strict conformance is required, then the parser can be disabled at configuration time.
