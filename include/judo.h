@@ -62,14 +62,20 @@ enum judo_element
     JUDO_EOF
 };
 
+// A range of UTF-8 code units in the JSON source text.
+struct judo_span
+{
+    int32_t offset;
+    int32_t length;
+};
+
 // Field names beginning with "s_" are private to the scanner implementation and must not be accessed.
 struct judo_stream
 {
 #ifndef DOXYGEN
     int32_t s_at;
 #endif
-    int32_t where;
-    int32_t length;
+    struct judo_span where;
     enum judo_element element;
 #ifndef DOXYGEN
     int8_t s_stack;
@@ -96,8 +102,7 @@ enum judo_type
 
 struct judo_error
 {
-    int32_t where;
-    int32_t length;
+    struct judo_span where;
     char description[JUDO_ERRMAX];
 };
 #endif
@@ -133,8 +138,8 @@ judo_member *judo_membfirst(judo_value *value);
 judo_member *judo_membnext(judo_member *member);
 judo_value *judo_membvalue(judo_member *member);
 
-enum judo_result judo_name2span(const judo_member *member, int32_t *lexeme, int32_t *length);
-enum judo_result judo_value2span(const judo_value *value, int32_t *lexeme, int32_t *length);
+struct judo_span judo_name2span(const judo_member *member);
+struct judo_span judo_value2span(const judo_value *value);
 #endif
 
 #endif

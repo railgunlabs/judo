@@ -49,8 +49,7 @@ struct judo_member
 {
     struct judo_member *next;
     struct judo_value *value;
-    int32_t name;
-    int32_t name_length;
+    struct judo_span name;
 };
 
 struct judo_object
@@ -62,8 +61,7 @@ struct judo_object
 struct judo_value
 {
     struct judo_value *next;
-    int32_t where;
-    int32_t length;
+    struct judo_span where;
     union // cppcheck-suppress misra-c2012-19.2
     {
         struct judo_boolean boolean;
@@ -184,7 +182,7 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
     {
         assert(parser->depth > 0); // LCOV_EXCL_BR_LINE
         struct compound *top = &parser->stack[parser->depth - 1];
-        top->value->length = (js->where + js->length) - top->value->where;
+        top->value->where.length = (js->where.offset + js->where.length) - top->value->where.offset;
         top->value = NULL;
         top->elements_tail = NULL;
         top->members_tail = NULL;
@@ -201,7 +199,6 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             value->kind = JUDO_TYPE_NULL;
             value->where = js->where;
-            value->length = js->length;
             link(parser, value);
         }
     }
@@ -217,7 +214,6 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             value->kind = JUDO_TYPE_BOOL;
             value->where = js->where;
-            value->length = js->length;
             value->u.boolean.value = (js->element == JUDO_TRUE) ? true : false;
             link(parser, value);
         }
@@ -233,7 +229,6 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             value->kind = JUDO_TYPE_NUMBER;
             value->where = js->where;
-            value->length = js->length;
             link(parser, value);
         }
     }
@@ -248,7 +243,6 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             value->kind = JUDO_TYPE_STRING;
             value->where = js->where;
-            value->length = js->length;
             link(parser, value);
         }
     }
@@ -270,7 +264,6 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             // Save the lexeme location.
             member->name = js->where;
-            member->name_length = js->length;
 
             // Link the object name into the linked list.
             struct judo_object *object = &top->value->u.object;
@@ -356,7 +349,6 @@ enum judo_result judo_parse(const char *source, int32_t length, judo_value **roo
                     (void)memcpy(error->description, stream.error, JUDO_ERRMAX);
                 }
                 error->where = stream.where;
-                error->length = stream.length;
             }
 
             // Use the result code from the scan operation, not the free operation.
@@ -552,16 +544,14 @@ bool judo_tobool(judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Publi
     return b;
 }
 
-enum judo_result judo_name2span(const judo_member *member, int32_t *lexeme, int32_t *length) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+struct judo_span judo_name2span(const judo_member *member) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    enum judo_result result = JUDO_INVALID_OPERATION;
-    if ((member != NULL) && (lexeme != NULL) && (length != NULL))
+    struct judo_span span = {0};
+    if (member != NULL)
     {
-        *lexeme = member->name;
-        *length = member->name_length;
-        result = JUDO_SUCCESS;
+        span = member->name;
     }
-    return result;
+    return span;
 }
 
 int32_t judo_len(const judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
@@ -601,16 +591,14 @@ judo_value *judo_membvalue(judo_member *member) // cppcheck-suppress misra-c2012
     return value;
 }
 
-enum judo_result judo_value2span(const judo_value *value, int32_t *lexeme, int32_t *length) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+struct judo_span judo_value2span(const judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    enum judo_result result = JUDO_INVALID_OPERATION;
-    if ((value != NULL) && (lexeme != NULL) && (length != NULL))
+    struct judo_span span = {0};
+    if (value != NULL)
     {
-        *lexeme = value->where;
-        *length = value->length;
-        result = JUDO_SUCCESS;
+        span = value->where;
     }
-    return result;
+    return span;
 }
 
 #endif

@@ -125,8 +125,7 @@ static enum judo_result bad_syntax(const struct scanner *scanner, int32_t positi
     struct judo_stream *stream = scanner->out;
     const size_t msglen = strlen(msg) + (size_t)1;
     assert(msglen < (size_t)JUDO_ERRMAX); // LCOV_EXCL_BR_LINE
-    scanner->out->where = position;
-    scanner->out->length = length;
+    scanner->out->where = (struct judo_span){position, length};
     scanner->out->element = JUDO_INVALID;
     scanner->out->s_state[scanner->out->s_stack] = STATE_PARSING_ERROR;
     (void)memcpy(stream->error, msg, msglen);
@@ -136,8 +135,7 @@ static enum judo_result bad_syntax(const struct scanner *scanner, int32_t positi
 static enum judo_result bad_encoding(const struct scanner *scanner, int32_t position, int32_t length)
 {
     struct judo_stream *stream = scanner->out;
-    scanner->out->where = position;
-    scanner->out->length = length;
+    scanner->out->where = (struct judo_span){position, length};
     scanner->out->element = JUDO_INVALID;
     scanner->out->s_state[scanner->out->s_stack] = STATE_ENCODING_ERROR;
     (void)memcpy(stream->error, "malformed encoded character", 28);
@@ -147,8 +145,7 @@ static enum judo_result bad_encoding(const struct scanner *scanner, int32_t posi
 static enum judo_result max_nesting_depth(const struct scanner *scanner)
 {
     struct judo_stream *stream = scanner->out;
-    scanner->out->where = scanner->at;
-    scanner->out->length = 1;
+    scanner->out->where = (struct judo_span){scanner->at, 1};
     scanner->out->element = JUDO_INVALID;
     scanner->out->s_state[scanner->out->s_stack] = STATE_MAX_NESTING_ERROR;
     (void)memcpy(stream->error, "maximum nesting depth exceeded", 31);
@@ -2031,8 +2028,7 @@ static enum judo_result parse_null(struct scanner *scanner, const struct token *
 {
     assert(token->type == TOKEN_NULL); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
-    scanner->out->where = token->lexeme;
-    scanner->out->length = token->lexeme_length;
+    scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
     scanner->out->element = JUDO_NULL;
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
     return JUDO_SUCCESS;
@@ -2047,8 +2043,7 @@ static enum judo_result parse_bool(struct scanner *scanner, const struct token *
     );
     // LCOV_EXCL_STOP
     eat(scanner, token);
-    scanner->out->where = token->lexeme;
-    scanner->out->length = token->lexeme_length;
+    scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
     scanner->out->element = (token->type == TOKEN_TRUE) ? JUDO_TRUE : JUDO_FALSE;
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
     return JUDO_SUCCESS;
@@ -2058,8 +2053,7 @@ static enum judo_result parse_number(struct scanner *scanner, const struct token
 {
     assert(token->type == TOKEN_NUMBER); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
-    scanner->out->where = token->lexeme;
-    scanner->out->length = token->lexeme_length;
+    scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
     scanner->out->element = JUDO_NUMBER;
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
     return JUDO_SUCCESS;
@@ -2069,8 +2063,7 @@ static enum judo_result parse_string(struct scanner *scanner, const struct token
 {
     assert(token->type == TOKEN_STRING); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
-    scanner->out->where = token->lexeme;
-    scanner->out->length = token->lexeme_length;
+    scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
     scanner->out->element = JUDO_STRING;
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
     return JUDO_SUCCESS;
@@ -2082,8 +2075,7 @@ static enum judo_result parse_array(struct scanner *scanner, const struct token 
 {
     assert(token->type == TOKEN_LBRACE); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
-    scanner->out->where = token->lexeme;
-    scanner->out->length = token->lexeme_length;
+    scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
     scanner->out->element = JUDO_ARRAY_PUSH;
     scanner->out->s_state[scanner->out->s_stack] = STATE_PARSE_ARRAY_END_OR_ARRAY_ELEMENT;
     return JUDO_SUCCESS;
@@ -2105,8 +2097,7 @@ static enum judo_result parse_array_element_or_array_end(struct scanner *scanner
         if (token.type == TOKEN_RBRACE)
         {
             eat(scanner, &token);
-            scanner->out->where = token.lexeme;
-            scanner->out->length = token.lexeme_length;
+            scanner->out->where = (struct judo_span){token.lexeme, token.lexeme_length};
             scanner->out->element = JUDO_ARRAY_POP;
             scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
         }
@@ -2138,8 +2129,7 @@ static enum judo_result finished_parsing_array_element(struct scanner *scanner)
             if (token.type == TOKEN_RBRACE)
             {
                 eat(scanner, &token);
-                scanner->out->where = token.lexeme;
-                scanner->out->length = token.lexeme_length;
+                scanner->out->where = (struct judo_span){token.lexeme, token.lexeme_length};
                 scanner->out->element = JUDO_ARRAY_POP;
                 scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
                 status = JUDO_SUCCESS;
@@ -2157,8 +2147,7 @@ static enum judo_result parse_object(struct scanner *scanner, const struct token
 {
     assert(token->type == TOKEN_LCURLYB); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
-    scanner->out->where = token->lexeme;
-    scanner->out->length = token->lexeme_length;
+    scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
     scanner->out->element = JUDO_OBJECT_PUSH;
     scanner->out->s_state[scanner->out->s_stack] = STATE_PARSE_OBJECT_KEY_OR_OBJECT_END;
     return JUDO_SUCCESS;
@@ -2170,8 +2159,7 @@ static enum judo_result parse_object_key(struct scanner *scanner, const struct t
     if (token->type == TOKEN_STRING)
     {
         eat(scanner, token);
-        scanner->out->where = token->lexeme;
-        scanner->out->length = token->lexeme_length;
+        scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
         scanner->out->element = JUDO_OBJECT_NAME;
         scanner->out->s_state[scanner->out->s_stack] = STATE_PARSE_OBJECT_VALUE;
     }
@@ -2179,8 +2167,7 @@ static enum judo_result parse_object_key(struct scanner *scanner, const struct t
     else if (token->type == TOKEN_ID)
     {
         eat(scanner, token);
-        scanner->out->where = token->lexeme;
-        scanner->out->length = token->lexeme_length;
+        scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
         scanner->out->element = JUDO_OBJECT_NAME;
         scanner->out->s_state[scanner->out->s_stack] = STATE_PARSE_OBJECT_VALUE;
     }
@@ -2220,8 +2207,7 @@ static enum judo_result parse_object_key_or_object_end(struct scanner *scanner)
         if (token.type == TOKEN_RCURLYB)
         {
             eat(scanner, &token);
-            scanner->out->where = token.lexeme;
-            scanner->out->length = token.lexeme_length;
+            scanner->out->where = (struct judo_span){token.lexeme, token.lexeme_length};
             scanner->out->element = JUDO_OBJECT_POP;
             scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
             status = JUDO_SUCCESS;
@@ -2259,8 +2245,7 @@ static enum judo_result finished_parsing_object_value(struct scanner *scanner)
             if (token.type == TOKEN_RCURLYB)
             {
                 eat(scanner, &token);
-                scanner->out->where = token.lexeme;
-                scanner->out->length = token.lexeme_length;
+                scanner->out->where = (struct judo_span){token.lexeme, token.lexeme_length};
                 scanner->out->element = JUDO_OBJECT_POP;
                 scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
                 status = JUDO_SUCCESS;
@@ -2413,8 +2398,7 @@ enum judo_result judo_scan(struct judo_stream *stream, const char *source, int32
                     if (token.type == TOKEN_EOF)
                     {
                         stream->element = JUDO_EOF;
-                        stream->where = token.lexeme;
-                        stream->length = token.lexeme_length;
+                        stream->where = (struct judo_span){token.lexeme, token.lexeme_length};
                         stream->s_state[stream->s_stack] = STATE_FINISHED_PARSING;
                     }
                     else

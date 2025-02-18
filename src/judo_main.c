@@ -133,7 +133,7 @@ static void compulate_source_location(const char *input, int32_t location, int *
 
 static void print_tree(struct judo_value *value, const char *source, const struct program_options *options)
 {
-    int32_t length, index;
+    struct judo_span where = {0};
 
     switch (judo_gettype(value))
     {
@@ -141,8 +141,8 @@ static void print_tree(struct judo_value *value, const char *source, const struc
     case JUDO_TYPE_BOOL:
     case JUDO_TYPE_NUMBER:
     case JUDO_TYPE_STRING:
-        judo_value2span(value, &index, &length);
-        printf("%.*s", length, &source[index]);
+        where = judo_value2span(value);
+        printf("%.*s", where.length, &source[where.offset]);
         break;
 
     case JUDO_TYPE_ARRAY:
@@ -162,8 +162,8 @@ static void print_tree(struct judo_value *value, const char *source, const struc
         putchar('{');
         for (struct judo_member *member = judo_membfirst(value); member != NULL; member = judo_membnext(member))
         {
-            judo_name2span(member, &index, &length);
-            printf("%.*s:", length, &source[index]);
+            where = judo_name2span(member);
+            printf("%.*s:", where.length, &source[where.offset]);
             print_tree(judo_membvalue(member), source, options);
             if (judo_membnext(member) != NULL)
             {
@@ -197,7 +197,7 @@ static void pretty_print_indent(int depth, const struct program_options *options
 
 static void pretty_print_tree(struct judo_value *value, const char *source, int depth, const struct program_options *options)
 {
-    int32_t length, index;
+    struct judo_span where = {0};
 
     switch (judo_gettype(value))
     {
@@ -205,8 +205,8 @@ static void pretty_print_tree(struct judo_value *value, const char *source, int 
     case JUDO_TYPE_BOOL:
     case JUDO_TYPE_NUMBER:
     case JUDO_TYPE_STRING:
-        judo_value2span(value, &index, &length);
-        printf("%.*s", length, &source[index]);
+        where = judo_value2span(value);
+        printf("%.*s", where.length, &source[where.offset]);
         break;
 
     case JUDO_TYPE_ARRAY:
@@ -245,8 +245,8 @@ static void pretty_print_tree(struct judo_value *value, const char *source, int 
             {
                 pretty_print_indent(depth + 1, options);
 
-                judo_name2span(member, &index, &length);
-                printf("%.*s: ", length, &source[index]);
+                where = judo_name2span(member);
+                printf("%.*s: ", where.length, &source[where.offset]);
 
                 pretty_print_tree(judo_membvalue(member), source, depth + 1, options);
 
@@ -300,7 +300,7 @@ static void judo_main(const struct program_options *options)
         }
 
         int line, column;
-        compulate_source_location(dynbuf, error.where, &line, &column);
+        compulate_source_location(dynbuf, error.where.offset, &line, &column);
         fprintf(stderr, "stdin:%d:%d: error: %s\n", line, column, error.description);
         free(dynbuf);
         exit(1);
@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
         if (strcmp(arg, "-v") == 0 ||
             strcmp(arg, "--version") == 0)
         {
-            puts("1.0.0-rc1");
+            puts("1.0.0-rc2");
             exit(0);
         }
 

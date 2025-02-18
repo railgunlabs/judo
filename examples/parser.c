@@ -43,7 +43,7 @@ void *memfunc(void *user_data, void *ptr, size_t size)
 
 void print_tree(const char *source, struct judo_value *value)
 {
-    int32_t index, length;
+    struct judo_span span;
     struct judo_value *elem;
     struct judo_member *member;
 
@@ -54,8 +54,8 @@ void print_tree(const char *source, struct judo_value *value)
     case JUDO_TYPE_BOOL:
     case JUDO_TYPE_NUMBER:
     case JUDO_TYPE_STRING:
-        judo_value2span(value, &index, &length);
-        printf("%.*s", length, &source[index]);
+        span = judo_value2span(value);
+        printf("%.*s", span.length, &source[span.offset]);
         break;
     // [cont...]
 //! [parser_process_traverse]
@@ -84,8 +84,8 @@ void print_tree(const char *source, struct judo_value *value)
         member = judo_membfirst(value);
         while (member != NULL)
         {
-            judo_name2span(member, &index, &length);
-            printf("%.*s:", length, &source[index]);
+            span = judo_name2span(member);
+            printf("%.*s:", span.length, &source[span.offset]);
             print_tree(source, judo_membvalue(member));
             if (judo_membnext(member) != NULL)
             {

@@ -37,13 +37,13 @@ static void process_element(struct judo_stream stream, const char *json)
     case JUDO_OBJECT_PUSH: puts("{push}"); break;
     case JUDO_OBJECT_POP: puts("{pop}"); break;
     case JUDO_NUMBER:
-        printf("number: %.*s\n", stream.length, &json[stream.where]);
+        printf("number: %.*s\n", stream.where.length, &json[stream.where.offset]);
         break;
     case JUDO_STRING:
-        printf("string: %.*s\n", stream.length, &json[stream.where]);
+        printf("string: %.*s\n", stream.where.length, &json[stream.where.offset]);
         break;
     case JUDO_OBJECT_NAME:
-        printf("{name: %.*s}\n", stream.length, &json[stream.where]);
+        printf("{name: %.*s}\n", stream.where.length, &json[stream.where.offset]);
         break;
     default:
         break;

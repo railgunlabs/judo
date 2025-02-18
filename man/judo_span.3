@@ -1,19 +1,21 @@
 .TH "JUDO" "3" "Feb 18th 2025" "Judo 1.0.0-rc2"
 .SH NAME
-judo_value \- JSON value
+judo_span
 .SH LIBRARY
 Embeddable JSON parser (libjudo, -ljudo)
 .SH SYNOPSIS
 .nf
 .B #include <judo.h>
 .PP
-.BI "typedef struct judo_value judo_value;"
+.B struct judo_span {
+.RS
+.B int32_t offset;
+.B int32_t length;
+.RE
+.B };
 .fi
 .SH DESCRIPTION
-This is an opaque type that represents a JSON value.
-See \f[B]judo_type\f[R](3) for all possible types.
-.SH SEE ALSO
-.BR judo_type (3)
+The structure describes a range of UTF-8 code units.
 .SH AUTHOR
 .UR https://railgunlabs.com
 Railgun Labs

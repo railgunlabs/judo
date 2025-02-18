@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Feb 14th 2025" "Judo 1.0.0-rc1"
+.TH "JUDO" "3" "Feb 18th 2025" "Judo 1.0.0-rc2"
 .SH NAME
 judo_error
 .SH LIBRARY
@@ -9,8 +9,7 @@ Embeddable JSON parser (libjudo, -ljudo)
 .PP
 .B struct judo_error {
 .RS
-.B int32_t where;
-.B int32_t length;
+.B struct judo_span where;
 .B char description[JUDO_ERRMAX];
 .RE
 .B };
@@ -19,7 +18,7 @@ Embeddable JSON parser (libjudo, -ljudo)
 This structure will be populated with error information if \f[B]judo_parse\f[R](3) fails.
 .PP
 The \f[I]description\f[R] field will be populated with a UTF-8 encoded error message written in US English.
-The \f[I]where\f[R] and \f[I]length\f[R] fields will be populated with the span of code units where the error was detected in the JSON source text.
+The \f[I]where\f[R] field will be populated with the span of code units where the error was detected in the JSON source text.
 You can use the span of code units to derive line and column numbers for more detailed error reporting.
 .SH SEE ALSO
 .BR judo_parse (3)
