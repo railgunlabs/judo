@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
         if (strcmp(arg, "-v") == 0 ||
             strcmp(arg, "--version") == 0)
         {
-            puts("1.0.0-rc2");
+            puts("1.0.0-rc3");
             exit(0);
         }
 
