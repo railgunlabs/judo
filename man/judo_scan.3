@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Feb 18th 2025" "Judo 1.0.0-rc2"
+.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc2"
 .SH NAME
 judo_scan \- incrementally scan JSON
 .SH LIBRARY
@@ -10,7 +10,7 @@ Embeddable JSON parser (libjudo, -ljudo)
 .BI "enum judo_result judo_scan(struct judo_stream *" stream ", const char *" source ", int32_t " length ");"
 .fi
 .SH DESCRIPTION
-The \f[B]judo_scan\f[R](3) function reads \f[C]string\f[R] as JSON and populates \f[I]stream\f[R] with the current semantic element.
+The \f[B]judo_scan\f[R](3) function reads \f[C]string\f[R] as JSON and populates \f[I]stream\f[R] with the current token.
 The number of code units in \f[C]string\f[R] is specified by \f[I]length\f[R], which, if negative, indicates that \f[C]string\f[R] is null-terminated.
 .PP
 The caller must zero initialize \f[I]stream\f[R] before the first call to this function.
@@ -20,22 +20,22 @@ The caller must never modify \f[I]stream\f[R] otherwise the behavior is undefine
 The caller may copy \f[I]stream\f[R] with \f[B]memcpy\f[R](3) to preserve its state.
 .SH RETURN VALUE
 .TP
-JUDO_SUCCESS
+JUDO_RESULT_SUCCESS
 If \f[C]string\f[R] was scanned successfully.
 .TP
-JUDO_BAD_SYNTAX
+JUDO_RESULT_BAD_SYNTAX
 If \f[C]string\f[R] is malformed JSON.
 .TP
-JUDO_ILLEGAL_BYTE_SEQUENCE
+JUDO_RESULT_ILLEGAL_BYTE_SEQUENCE
 If \f[C]string\f[R] has a malformed UTF-8 encoded character.
 .TP
-JUDO_INVALID_OPERATION
+JUDO_RESULT_INVALID_OPERATION
 If \f[I]stream\f[R] or \f[C]string\f[R] are NULL.
 .TP
-JUDO_MAXIMUM_NESTING
+JUDO_RESULT_MAXIMUM_NESTING
 If \f[C]string\f[R] defines JSON with compound structures nested deeper than \f[B]JUDO_MAXDEPTH\f[R](3).
 .TP
-JUDO_MALFUNCTION
+JUDO_RESULT_MALFUNCTION
 If there is a defect in the implementation.
 .SH SEE ALSO
 .BR JUDO_MAXDEPTH (3),

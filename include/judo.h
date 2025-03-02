@@ -33,33 +33,33 @@ typedef long double judo_number;
 
 enum judo_result
 {
-    JUDO_SUCCESS,
-    JUDO_BAD_SYNTAX,
-    JUDO_NO_BUFFER_SPACE,
-    JUDO_ILLEGAL_BYTE_SEQUENCE,
-    JUDO_OUT_OF_RANGE,
-    JUDO_INVALID_OPERATION,
-    JUDO_MAXIMUM_NESTING,
-    JUDO_OUT_OF_MEMORY,
-    JUDO_MALFUNCTION,
+    JUDO_RESULT_SUCCESS,
+    JUDO_RESULT_BAD_SYNTAX,
+    JUDO_RESULT_NO_BUFFER_SPACE,
+    JUDO_RESULT_ILLEGAL_BYTE_SEQUENCE,
+    JUDO_RESULT_OUT_OF_RANGE,
+    JUDO_RESULT_INVALID_OPERATION,
+    JUDO_RESULT_MAXIMUM_NESTING,
+    JUDO_RESULT_OUT_OF_MEMORY,
+    JUDO_RESULT_MALFUNCTION,
 };
 
-// An "element" marks a point of interests when parsing the JSON stream.
+// An "token" marks a point of interests when parsing the JSON stream.
 // They may or may not correspond with a JSON token.
-enum judo_element
+enum judo_token
 {
-    JUDO_INVALID,
-    JUDO_NULL,
-    JUDO_TRUE,
-    JUDO_FALSE,
-    JUDO_NUMBER,
-    JUDO_STRING,
-    JUDO_ARRAY_PUSH,
-    JUDO_ARRAY_POP,
-    JUDO_OBJECT_PUSH,
-    JUDO_OBJECT_POP,
-    JUDO_OBJECT_NAME,
-    JUDO_EOF
+    JUDO_TOKEN_INVALID,
+    JUDO_TOKEN_NULL,
+    JUDO_TOKEN_TRUE,
+    JUDO_TOKEN_FALSE,
+    JUDO_TOKEN_NUMBER,
+    JUDO_TOKEN_STRING,
+    JUDO_TOKEN_ARRAY_BEGIN,
+    JUDO_TOKEN_ARRAY_END,
+    JUDO_TOKEN_OBJECT_BEGIN,
+    JUDO_TOKEN_OBJECT_END,
+    JUDO_TOKEN_OBJECT_NAME,
+    JUDO_TOKEN_EOF
 };
 
 // A range of UTF-8 code units in the JSON source text.
@@ -76,7 +76,7 @@ struct judo_stream
     int32_t s_at;
 #endif
     struct judo_span where;
-    enum judo_element element;
+    enum judo_token token;
 #ifndef DOXYGEN
     int8_t s_stack;
     int8_t s_state[JUDO_MAXDEPTH];

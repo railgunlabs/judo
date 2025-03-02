@@ -11,10 +11,10 @@
  *  license, as set out in <https://railgunlabs.com/judo/license/>.
  */
 
-// This example scans JSON source text and prints, to stdout, each semantic
-// token on its own separate line. Numbers, strings, and member names are
-// printed by lexeme. Use 'judo_stringify' and 'judo_numberify' functions to
-// obtain the escaped string and floating-point number.
+// This example scans JSON source text and prints, to stdout, each token
+// on its own separate line. Numbers, strings, and member names are printed
+// by lexeme. You can use 'judo_stringify' and 'judo_numberify' functions
+// to obtain the escaped string and floating-point number.
 
 // This code does not attempt to be MISRA compliant.
 
@@ -24,31 +24,31 @@
 
 char *judo_readstdin(size_t *size);
 
-static void process_element(struct judo_stream stream, const char *json)
+static void process_token(struct judo_stream stream, const char *json)
 {
-//! [scanner_process_element]
-    switch (stream.element)
+//! [scanner_process_token]
+    switch (stream.token)
     {
-    case JUDO_NULL: puts("null"); break;
-    case JUDO_TRUE: puts("true"); break;
-    case JUDO_FALSE: puts("false"); break;
-    case JUDO_ARRAY_PUSH: puts("[push]"); break;
-    case JUDO_ARRAY_POP: puts("[pop]"); break;
-    case JUDO_OBJECT_PUSH: puts("{push}"); break;
-    case JUDO_OBJECT_POP: puts("{pop}"); break;
-    case JUDO_NUMBER:
+    case JUDO_TOKEN_NULL: puts("null"); break;
+    case JUDO_TOKEN_TRUE: puts("true"); break;
+    case JUDO_TOKEN_FALSE: puts("false"); break;
+    case JUDO_TOKEN_ARRAY_BEGIN: puts("[push]"); break;
+    case JUDO_TOKEN_ARRAY_END: puts("[pop]"); break;
+    case JUDO_TOKEN_OBJECT_BEGIN: puts("{push}"); break;
+    case JUDO_TOKEN_OBJECT_END: puts("{pop}"); break;
+    case JUDO_TOKEN_NUMBER:
         printf("number: %.*s\n", stream.where.length, &json[stream.where.offset]);
         break;
-    case JUDO_STRING:
+    case JUDO_TOKEN_STRING:
         printf("string: %.*s\n", stream.where.length, &json[stream.where.offset]);
         break;
-    case JUDO_OBJECT_NAME:
+    case JUDO_TOKEN_OBJECT_NAME:
         printf("{name: %.*s}\n", stream.where.length, &json[stream.where.offset]);
         break;
     default:
         break;
     }
-//! [scanner_process_element]
+//! [scanner_process_token]
 }
 
 int main(int argc, char *argv[])
@@ -69,13 +69,13 @@ int main(int argc, char *argv[])
     for (;;)
     {
         result = judo_scan(&stream, json, json_len);
-        if (result == JUDO_SUCCESS)
+        if (result == JUDO_RESULT_SUCCESS)
         {
-            if (stream.element == JUDO_EOF)
+            if (stream.token == JUDO_TOKEN_EOF)
             {
                 break;
             }
-            process_element(stream, json);
+            process_token(stream, json);
         }
         else
         {

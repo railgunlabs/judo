@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
     struct judo_error error = {0};
     struct judo_value *root;
     enum judo_result result = judo_parse(json, json_len, &root, &error, NULL, memfunc);
-    if (result == JUDO_SUCCESS)
+    if (result == JUDO_RESULT_SUCCESS)
     {
         print_tree(json, root);
         judo_free(root, NULL, memfunc);

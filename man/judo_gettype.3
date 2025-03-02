@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Feb 18th 2025" "Judo 1.0.0-rc2"
+.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc2"
 .SH NAME
 judo_gettype \- type of a JSON value
 .SH LIBRARY
@@ -11,10 +11,13 @@ Embeddable JSON parser (libjudo, -ljudo)
 .fi
 .SH DESCRIPTION
 The \f[B]judo_gettype\f[R](3) function returns the JSON type of \f[I]value\f[R].
-The pointer to \f[I]value\f[R] must not be NULL otherwise the behavior is undefined.
+.PP
+The argument must not be NULL. If it is NULL, the implementation will return the constant \f[B]JUDO_TYPE_NULL\f[R] to prevent undefined behavior, but this safeguard should not be relied upon.
+The caller must be responsible for ensuring that \f[I]value\f[R] is not NULL.
 .SH RETURN VALUE
 The JSON type of \f[I]value\f[R].
 .SH SEE ALSO
+.BR judo_type (3),
 .BR judo_value (3)
 .SH AUTHOR
 .UR https://railgunlabs.com

@@ -1,72 +1,76 @@
-.TH "JUDO" "3" "Feb 18th 2025" "Judo 1.0.0-rc2"
+.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc2"
 .SH NAME
-judo_element \- semantic element
+judo_token \- lexical element
 .SH LIBRARY
 Embeddable JSON parser (libjudo, -ljudo)
 .SH SYNOPSIS
 .nf
 .B #include <judo.h>
 .PP
-.B enum judo_element {
+.B enum judo_token {
 .RS
-.B JUDO_INVALID,
-.B JUDO_NULL,
-.B JUDO_TRUE,
-.B JUDO_FALSE,
-.B JUDO_NUMBER,
-.B JUDO_STRING,
-.B JUDO_ARRAY_PUSH,
-.B JUDO_ARRAY_POP,
-.B JUDO_OBJECT_PUSH,
-.B JUDO_OBJECT_POP,
-.B JUDO_OBJECT_NAME,
-.B JUDO_EOF,
+.B JUDO_TOKEN_INVALID,
+.B JUDO_TOKEN_NULL,
+.B JUDO_TOKEN_TRUE,
+.B JUDO_TOKEN_FALSE,
+.B JUDO_TOKEN_NUMBER,
+.B JUDO_TOKEN_STRING,
+.B JUDO_TOKEN_ARRAY_BEGIN,
+.B JUDO_TOKEN_ARRAY_END,
+.B JUDO_TOKEN_OBJECT_BEGIN,
+.B JUDO_TOKEN_OBJECT_END,
+.B JUDO_TOKEN_OBJECT_NAME,
+.B JUDO_TOKEN_EOF,
 .RE
 .B };
 .fi
 .SH DESCRIPTION
-This enumeration represents a semantically important element within the JSON stream.
+This enumeration represents a lexically important element within the JSON stream.
 .SH CONSTANTS
 .TP
-.BR JUDO_INVALID
-This element will be returned if an error occurred during the scanning of the JSON stream.
+.BR JUDO_TOKEN_INVALID
+This constant will be returned if an error occurred during the scanning of the JSON stream.
 .TP
-.BR JUDO_NULL
+.BR JUDO_TOKEN_NULL
 Represents the JSON \f[C]null\f[R] literal.
 .TP
-.BR JUDO_TRUE
+.BR JUDO_TOKEN_TRUE
 Represents the JSON boolean \f[C]true\f[R] literal.
 .TP
-.BR JUDO_FALSE
+.BR JUDO_TOKEN_FALSE
 Represents the JSON boolean \f[C]false\f[R] literal.
 .TP
-.BR JUDO_NUMBER
+.BR JUDO_TOKEN_NUMBER
 Represents a JSON numeric literal.
 The floating point representation can be retrieved with \f[B]judo_numberify\f[R](3).
 .TP
-.BR JUDO_STRING
+.BR JUDO_TOKEN_STRING
 Represents a JSON string literal.
 The decoded string can be retrieved with \f[B]judo_stringify\f[R](3).
 .TP
-.BR JUDO_ARRAY_PUSH
+.BR JUDO_TOKEN_ARRAY_BEGIN
 Indicates an array is about to be parsed.
+It corresponds to the \f[C][\f[R] lexeme.
 .TP
-.BR JUDO_ARRAY_POP
+.BR JUDO_TOKEN_ARRAY_END
 Indicates an array has finished being parsed.
+It corresponds to the \f[C]]\f[R] lexeme.
 .TP
-.BR JUDO_OBJECT_PUSH
+.BR JUDO_TOKEN_OBJECT_BEGIN
 Indicates an object is about to be parsed.
+It corresponds to the \f[C]{\f[R] lexeme.
 .TP
-.BR JUDO_OBJECT_POP
+.BR JUDO_TOKEN_OBJECT_END
 Indicates an object has finished being parsed.
+It corresponds to the \f[C]}\f[R] lexeme.
 .TP
-.BR JUDO_OBJECT_NAME
+.BR JUDO_TOKEN_OBJECT_NAME
 Represents an object’s member name.
 In JavaScript terminology, this would be called the object’s “key.” In JSON5 this might be an ECMAScript 5.1 identifier.
 .TP
-.BR JUDO_EOF
+.BR JUDO_TOKEN_EOF
 Represents the end of the JSON stream.
-Receiving this element indicates the JSON stream has been successfully fully parsed.
+Receiving this constant indicates the JSON stream has been successfully fully parsed.
 .SH SEE ALSO
 .BR judo_numberify (3),
 .BR judo_stringify (3)

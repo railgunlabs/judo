@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Feb 18th 2025" "Judo 1.0.0-rc2"
+.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc2"
 .SH NAME
 judo_result \- function status code
 .SH LIBRARY
@@ -9,15 +9,15 @@ Embeddable JSON parser (libjudo, -ljudo)
 .PP
 .B enum judo_result {
 .RS
-.B JUDO_SUCCESS,
-.B JUDO_BAD_SYNTAX,
-.B JUDO_NO_BUFFER_SPACE,
-.B JUDO_ILLEGAL_BYTE_SEQUENCE,
-.B JUDO_OUT_OF_RANGE,
-.B JUDO_INVALID_OPERATION,
-.B JUDO_MAXIMUM_NESTING,
-.B JUDO_OUT_OF_MEMORY,
-.B JUDO_MALFUNCTION,
+.B JUDO_RESULT_SUCCESS,
+.B JUDO_RESULT_BAD_SYNTAX,
+.B JUDO_RESULT_NO_BUFFER_SPACE,
+.B JUDO_RESULT_ILLEGAL_BYTE_SEQUENCE,
+.B JUDO_RESULT_OUT_OF_RANGE,
+.B JUDO_RESULT_INVALID_OPERATION,
+.B JUDO_RESULT_MAXIMUM_NESTING,
+.B JUDO_RESULT_OUT_OF_MEMORY,
+.B JUDO_RESULT_MALFUNCTION,
 .RE
 .B };
 .fi
@@ -26,31 +26,31 @@ Most functions in the Judo API return one of these enumeration values.
 Those that don’t are higher-level, inspection-oriented APIs that operate on already derived data.
 .SH CONSTANTS
 .TP
-.BR JUDO_SUCCESS
+.BR JUDO_RESULT_SUCCESS
 Operation successful.
 .TP
-.BR JUDO_BAD_SYNTAX
+.BR JUDO_RESULT_BAD_SYNTAX
 Source text malformed.
 .TP
-.BR JUDO_NO_BUFFER_SPACE
+.BR JUDO_RESULT_NO_BUFFER_SPACE
 Insufficient buffer space.
 .TP
-.BR JUDO_ILLEGAL_BYTE_SEQUENCE
+.BR JUDO_RESULT_ILLEGAL_BYTE_SEQUENCE
 Malformed Unicode encoded character.
 .TP
-.BR JUDO_OUT_OF_RANGE
+.BR JUDO_RESULT_OUT_OF_RANGE
 The value cannot be represented by the storage type.
 .TP
-.BR JUDO_INVALID_OPERATION
+.BR JUDO_RESULT_INVALID_OPERATION
 Illegal API usage.
 .TP
-.BR JUDO_MAXIMUM_NESTING
+.BR JUDO_RESULT_MAXIMUM_NESTING
 The JSON structure exceeds the maximum nesting depth.
 .TP
-.BR JUDO_OUT_OF_MEMORY
+.BR JUDO_RESULT_OUT_OF_MEMORY
 Dynamic memory allocation failed.
 .TP
-.BR JUDO_MALFUNCTION
+.BR JUDO_RESULT_MALFUNCTION
 Defect in the implementation.
 .SH AUTHOR
 .UR https://railgunlabs.com

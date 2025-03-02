@@ -126,30 +126,30 @@ static enum judo_result bad_syntax(const struct scanner *scanner, int32_t positi
     const size_t msglen = strlen(msg) + (size_t)1;
     assert(msglen < (size_t)JUDO_ERRMAX); // LCOV_EXCL_BR_LINE
     scanner->out->where = (struct judo_span){position, length};
-    scanner->out->element = JUDO_INVALID;
+    scanner->out->token = JUDO_TOKEN_INVALID;
     scanner->out->s_state[scanner->out->s_stack] = STATE_PARSING_ERROR;
     (void)memcpy(stream->error, msg, msglen);
-    return JUDO_BAD_SYNTAX;
+    return JUDO_RESULT_BAD_SYNTAX;
 }
 
 static enum judo_result bad_encoding(const struct scanner *scanner, int32_t position, int32_t length)
 {
     struct judo_stream *stream = scanner->out;
     scanner->out->where = (struct judo_span){position, length};
-    scanner->out->element = JUDO_INVALID;
+    scanner->out->token = JUDO_TOKEN_INVALID;
     scanner->out->s_state[scanner->out->s_stack] = STATE_ENCODING_ERROR;
     (void)memcpy(stream->error, "malformed encoded character", 28);
-    return JUDO_ILLEGAL_BYTE_SEQUENCE;
+    return JUDO_RESULT_ILLEGAL_BYTE_SEQUENCE;
 }
 
 static enum judo_result max_nesting_depth(const struct scanner *scanner)
 {
     struct judo_stream *stream = scanner->out;
     scanner->out->where = (struct judo_span){scanner->at, 1};
-    scanner->out->element = JUDO_INVALID;
+    scanner->out->token = JUDO_TOKEN_INVALID;
     scanner->out->s_state[scanner->out->s_stack] = STATE_MAX_NESTING_ERROR;
     (void)memcpy(stream->error, "maximum nesting depth exceeded", 31);
-    return JUDO_MAXIMUM_NESTING;
+    return JUDO_RESULT_MAXIMUM_NESTING;
 }
 
 static bool is_bounded(const uint8_t *string, int32_t length, int32_t position, int32_t byte_count)
@@ -496,11 +496,11 @@ static enum judo_result json_atol(const char *string, int32_t string_length, jud
 
     if (value == (judo_number)INFINITY)
     {
-        status = JUDO_OUT_OF_RANGE;
+        status = JUDO_RESULT_OUT_OF_RANGE;
     }
     else
     {
-        status = JUDO_SUCCESS;
+        status = JUDO_RESULT_SUCCESS;
     }
 
     *number = value * sign;
@@ -627,11 +627,11 @@ static enum judo_result json_atof(const char *string, int32_t string_length, jud
 
     if (value == (judo_number)INFINITY)
     {
-        status = JUDO_OUT_OF_RANGE;
+        status = JUDO_RESULT_OUT_OF_RANGE;
     }
     else
     {
-        status = JUDO_SUCCESS;
+        status = JUDO_RESULT_SUCCESS;
     }
 
     *number = value * sign;
@@ -641,19 +641,19 @@ static enum judo_result json_atof(const char *string, int32_t string_length, jud
 enum judo_result judo_numberify(const char *lexeme, int32_t length, judo_number *number) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
     const uint8_t *bytes = (const uint8_t *)lexeme;
-    enum judo_result status = JUDO_SUCCESS;
+    enum judo_result status = JUDO_RESULT_SUCCESS;
 
     if (lexeme == NULL)
     {
-        status = JUDO_INVALID_OPERATION;
+        status = JUDO_RESULT_INVALID_OPERATION;
     }
     else if (length <= 0)
     {
-        status = JUDO_INVALID_OPERATION;
+        status = JUDO_RESULT_INVALID_OPERATION;
     }
     else if (number == NULL)
     {
-        status = JUDO_INVALID_OPERATION;
+        status = JUDO_RESULT_INVALID_OPERATION;
     }
     else
     {
@@ -740,7 +740,7 @@ static int32_t is_newline(const uint8_t *string, int32_t length, int32_t positio
 #if defined(JUDO_JSON5)
 static enum judo_result scan_number(const struct scanner *scanner, struct token *token)
 {
-    enum judo_result result = JUDO_SUCCESS;
+    enum judo_result result = JUDO_RESULT_SUCCESS;
     int32_t current = scanner->at;
     unichar sign = UNICHAR_C(0);
     bool has_decimal = false;
@@ -849,7 +849,7 @@ static enum judo_result scan_number(const struct scanner *scanner, struct token 
         // No action to take.
     }
     
-    if ((result == JUDO_SUCCESS) && (token->type == TOKEN_INVALID))
+    if ((result == JUDO_RESULT_SUCCESS) && (token->type == TOKEN_INVALID))
     {
         // '.'
         if (cp == UNICHAR_C('.'))
@@ -916,7 +916,7 @@ static enum judo_result scan_number(const struct scanner *scanner, struct token 
             }
         }
 
-        if (result == JUDO_SUCCESS)
+        if (result == JUDO_RESULT_SUCCESS)
         {
             token->type = TOKEN_NUMBER;
             token->lexeme_length = (int32_t)(current - scanner->at);
@@ -928,7 +928,7 @@ static enum judo_result scan_number(const struct scanner *scanner, struct token 
 #else
 static enum judo_result scan_number(const struct scanner *scanner, struct token *token)
 {
-    enum judo_result result = JUDO_SUCCESS;
+    enum judo_result result = JUDO_RESULT_SUCCESS;
     int32_t current = scanner->at;
     unichar cp = scanner->string[current];
 
@@ -1027,7 +1027,7 @@ static enum judo_result scan_number(const struct scanner *scanner, struct token 
                 }
             }
 
-            if (result == JUDO_SUCCESS)
+            if (result == JUDO_RESULT_SUCCESS)
             {
                 token->type = TOKEN_NUMBER;
                 token->lexeme_length = (int32_t)(current - scanner->at);
@@ -1041,7 +1041,7 @@ static enum judo_result scan_number(const struct scanner *scanner, struct token 
 
 static enum judo_result scan_string(const struct scanner *scanner, struct token *token)
 {
-    enum judo_result status = JUDO_SUCCESS;
+    enum judo_result status = JUDO_RESULT_SUCCESS;
     const uint8_t *string = scanner->string;
     const uint8_t quote_char = scanner->string[scanner->at];
     int32_t current = scanner->at;
@@ -1050,7 +1050,7 @@ static enum judo_result scan_string(const struct scanner *scanner, struct token 
     current += 1; // consume opening quote
     
     // Loop until the closing quote is encountered or EOF.
-    while (is_bounded(string, scanner->length, current, 1) && (status == JUDO_SUCCESS))
+    while (is_bounded(string, scanner->length, current, 1) && (status == JUDO_RESULT_SUCCESS))
     {
         // Check for characters that MUST be escaped.
         if (string[current] <= (uint8_t)0x001F)
@@ -1208,7 +1208,7 @@ static enum judo_result scan_string(const struct scanner *scanner, struct token 
     }
     
     // If no errors occurred, but the end of the string was not found, then report an error.
-    if ((status == JUDO_SUCCESS) && (token->type == TOKEN_INVALID))
+    if ((status == JUDO_RESULT_SUCCESS) && (token->type == TOKEN_INVALID))
     { 
         status = bad_syntax(scanner, scanner->at, 1, "unclosed string");
     }
@@ -1244,7 +1244,7 @@ static void write_bytes(struct bytebuf *b, unichar cp)
 
 enum judo_result judo_stringify(const char *lexeme, int32_t length, char *buf, int32_t *buflen) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    enum judo_result status = JUDO_SUCCESS;
+    enum judo_result status = JUDO_RESULT_SUCCESS;
     unichar codepoint = UNICHAR_C(0x0);
     struct bytebuf out = {
         .written = 0,
@@ -1255,23 +1255,23 @@ enum judo_result judo_stringify(const char *lexeme, int32_t length, char *buf, i
 
     if (lexeme == NULL)
     {
-        status = JUDO_INVALID_OPERATION;
+        status = JUDO_RESULT_INVALID_OPERATION;
     }
     else if (buflen == NULL)
     {
-        status = JUDO_INVALID_OPERATION;
+        status = JUDO_RESULT_INVALID_OPERATION;
     }
     else if (*buflen < 0)
     {
-        status = JUDO_INVALID_OPERATION;
+        status = JUDO_RESULT_INVALID_OPERATION;
     }
     else if ((buf == NULL) && (*buflen != 0))
     {
-        status = JUDO_INVALID_OPERATION;
+        status = JUDO_RESULT_INVALID_OPERATION;
     }
     else if (length <= 0)
     {
-        status = JUDO_INVALID_OPERATION;
+        status = JUDO_RESULT_INVALID_OPERATION;
     }
     else
     {
@@ -1286,7 +1286,7 @@ enum judo_result judo_stringify(const char *lexeme, int32_t length, char *buf, i
             unichar low;
             int32_t curr = 1;
             int32_t stop = length - 1;
-            while ((status == JUDO_SUCCESS) && (curr < stop))
+            while ((status == JUDO_RESULT_SUCCESS) && (curr < stop))
             {
                 if (string[curr] == '\\')
                 {
@@ -1358,7 +1358,7 @@ enum judo_result judo_stringify(const char *lexeme, int32_t length, char *buf, i
                         break;
 
                     default:
-                        status = JUDO_MALFUNCTION;
+                        status = JUDO_RESULT_MALFUNCTION;
                         break;
                     }
                 }
@@ -1375,7 +1375,7 @@ enum judo_result judo_stringify(const char *lexeme, int32_t length, char *buf, i
 #if defined(JUDO_JSON5)
         else
         {
-            assert(status == JUDO_SUCCESS); // LCOV_EXCL_BR_LINE
+            assert(status == JUDO_RESULT_SUCCESS); // LCOV_EXCL_BR_LINE
 
             int32_t curr = 0;
             int32_t stop = length;
@@ -1409,7 +1409,7 @@ enum judo_result judo_stringify(const char *lexeme, int32_t length, char *buf, i
 #endif
     }
 
-    if (status == JUDO_SUCCESS)
+    if (status == JUDO_RESULT_SUCCESS)
     {
         // If the output buffer is NULL, then record how many bytes are needed in the fully escaped string.
         // Otherwise, record how many bytes were actually written.
@@ -1422,7 +1422,7 @@ enum judo_result judo_stringify(const char *lexeme, int32_t length, char *buf, i
         {
             if (out.length > out.capacity)
             {
-                status = JUDO_NO_BUFFER_SPACE;
+                status = JUDO_RESULT_NO_BUFFER_SPACE;
             }
             *buflen = out.written;
         }
@@ -1525,7 +1525,7 @@ static void scan_keyword(const struct scanner *scanner, struct token *token)
 #if defined(JUDO_JSON5)
 static enum judo_result scan_unicode_escape(const struct scanner *scanner, int32_t position)
 {
-    enum judo_result status = JUDO_SUCCESS;
+    enum judo_result status = JUDO_RESULT_SUCCESS;
     int32_t current = position;
     current += 1; // skip the backslash
 
@@ -1560,7 +1560,7 @@ static enum judo_result scan_unicode_escape(const struct scanner *scanner, int32
 
 static enum judo_result scan_ES5_identifier(const struct scanner *scanner, struct token *token)
 {
-    enum judo_result status = JUDO_SUCCESS;
+    enum judo_result status = JUDO_RESULT_SUCCESS;
     const uint8_t *string = &scanner->string[scanner->at];
     int32_t current = scanner->at;
 
@@ -1576,7 +1576,7 @@ static enum judo_result scan_ES5_identifier(const struct scanner *scanner, struc
         }
         current += byte_count;
 
-        while (status == JUDO_SUCCESS)
+        while (status == JUDO_RESULT_SUCCESS)
         {
             cp = utf8_decode(scanner->string, scanner->length, current, &byte_count);
             if (cp == UNICHAR_C('\\'))
@@ -1594,7 +1594,7 @@ static enum judo_result scan_ES5_identifier(const struct scanner *scanner, struc
             current += byte_count;
         }
 
-        if (status == JUDO_SUCCESS)
+        if (status == JUDO_RESULT_SUCCESS)
         {
             // JSON5 requires that object keys may be an ECMAScript 5.1 IdentifierName.
             int32_t token_length = current - scanner->at;
@@ -1772,7 +1772,7 @@ static enum judo_result scan_comment(const struct scanner *scanner, int32_t *byt
     }
 
     *byte_count = current - scanner->at;
-    return JUDO_SUCCESS;
+    return JUDO_RESULT_SUCCESS;
 }
 
 static enum judo_result scan_multiline_comment(const struct scanner *scanner, int32_t *byte_count)
@@ -1811,7 +1811,7 @@ static enum judo_result scan_multiline_comment(const struct scanner *scanner, in
     }
     else
     {
-        result = JUDO_SUCCESS;
+        result = JUDO_RESULT_SUCCESS;
     }
 
     return result;
@@ -1854,7 +1854,7 @@ static bool is_space(unichar cp)
 
 static enum judo_result consume_space_and_comments(struct scanner *scanner)
 {
-    enum judo_result status = JUDO_SUCCESS;
+    enum judo_result status = JUDO_RESULT_SUCCESS;
 
     // Consume all the whitespace characters leading up to the token.
     for (;;)
@@ -1906,7 +1906,7 @@ static enum judo_result peek(struct scanner *scanner, struct token *token)
     status = consume_space_and_comments(scanner);
 
 #if defined(JUDO_WITH_COMMENTS) || defined(JUDO_JSON5)
-    if (status == JUDO_SUCCESS)
+    if (status == JUDO_RESULT_SUCCESS)
 #endif
     {
         token->type = TOKEN_INVALID;
@@ -1986,7 +1986,7 @@ static enum judo_result peek(struct scanner *scanner, struct token *token)
             {
                 status = scan_ES5_identifier(scanner, token);
             }
-            if (status == JUDO_SUCCESS)
+            if (status == JUDO_RESULT_SUCCESS)
 #endif
             {
                 if (token->type == TOKEN_INVALID)
@@ -2029,9 +2029,9 @@ static enum judo_result parse_null(struct scanner *scanner, const struct token *
     assert(token->type == TOKEN_NULL); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
     scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
-    scanner->out->element = JUDO_NULL;
+    scanner->out->token = JUDO_TOKEN_NULL;
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
-    return JUDO_SUCCESS;
+    return JUDO_RESULT_SUCCESS;
 }
 
 static enum judo_result parse_bool(struct scanner *scanner, const struct token *token)
@@ -2044,9 +2044,9 @@ static enum judo_result parse_bool(struct scanner *scanner, const struct token *
     // LCOV_EXCL_STOP
     eat(scanner, token);
     scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
-    scanner->out->element = (token->type == TOKEN_TRUE) ? JUDO_TRUE : JUDO_FALSE;
+    scanner->out->token = (token->type == TOKEN_TRUE) ? JUDO_TOKEN_TRUE : JUDO_TOKEN_FALSE;
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
-    return JUDO_SUCCESS;
+    return JUDO_RESULT_SUCCESS;
 }
 
 static enum judo_result parse_number(struct scanner *scanner, const struct token *token)
@@ -2054,9 +2054,9 @@ static enum judo_result parse_number(struct scanner *scanner, const struct token
     assert(token->type == TOKEN_NUMBER); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
     scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
-    scanner->out->element = JUDO_NUMBER;
+    scanner->out->token = JUDO_TOKEN_NUMBER;
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
-    return JUDO_SUCCESS;
+    return JUDO_RESULT_SUCCESS;
 }
 
 static enum judo_result parse_string(struct scanner *scanner, const struct token *token)
@@ -2064,9 +2064,9 @@ static enum judo_result parse_string(struct scanner *scanner, const struct token
     assert(token->type == TOKEN_STRING); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
     scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
-    scanner->out->element = JUDO_STRING;
+    scanner->out->token = JUDO_TOKEN_STRING;
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
-    return JUDO_SUCCESS;
+    return JUDO_RESULT_SUCCESS;
 }
 
 static enum judo_result parse_value(struct scanner *scanner, const char *msg);
@@ -2076,14 +2076,14 @@ static enum judo_result parse_array(struct scanner *scanner, const struct token 
     assert(token->type == TOKEN_LBRACE); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
     scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
-    scanner->out->element = JUDO_ARRAY_PUSH;
+    scanner->out->token = JUDO_TOKEN_ARRAY_BEGIN;
     scanner->out->s_state[scanner->out->s_stack] = STATE_PARSE_ARRAY_END_OR_ARRAY_ELEMENT;
-    return JUDO_SUCCESS;
+    return JUDO_RESULT_SUCCESS;
 }
 
 static enum judo_result parse_array_element(struct scanner *scanner)
 {
-    // After the array element has been parsed, we should check for a comma.
+    // After the array token has been parsed, we should check for a comma.
     scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_ARRAY_ELEMENT;
     return parse_value(scanner, "expected value");
 }
@@ -2092,13 +2092,13 @@ static enum judo_result parse_array_element_or_array_end(struct scanner *scanner
 {
     struct token token = {0};
     enum judo_result status = peek(scanner, &token);
-    if (status == JUDO_SUCCESS)
+    if (status == JUDO_RESULT_SUCCESS)
     {
         if (token.type == TOKEN_RBRACE)
         {
             eat(scanner, &token);
             scanner->out->where = (struct judo_span){token.lexeme, token.lexeme_length};
-            scanner->out->element = JUDO_ARRAY_POP;
+            scanner->out->token = JUDO_TOKEN_ARRAY_END;
             scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
         }
         else
@@ -2113,7 +2113,7 @@ static enum judo_result finished_parsing_array_element(struct scanner *scanner)
 {
     struct token token = {0};
     enum judo_result status = peek(scanner, &token);
-    if (status == JUDO_SUCCESS)
+    if (status == JUDO_RESULT_SUCCESS)
     {
         if (token.type == TOKEN_COMMA)
         {
@@ -2130,9 +2130,9 @@ static enum judo_result finished_parsing_array_element(struct scanner *scanner)
             {
                 eat(scanner, &token);
                 scanner->out->where = (struct judo_span){token.lexeme, token.lexeme_length};
-                scanner->out->element = JUDO_ARRAY_POP;
+                scanner->out->token = JUDO_TOKEN_ARRAY_END;
                 scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
-                status = JUDO_SUCCESS;
+                status = JUDO_RESULT_SUCCESS;
             }
             else
             {
@@ -2148,19 +2148,19 @@ static enum judo_result parse_object(struct scanner *scanner, const struct token
     assert(token->type == TOKEN_LCURLYB); // LCOV_EXCL_BR_LINE
     eat(scanner, token);
     scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
-    scanner->out->element = JUDO_OBJECT_PUSH;
+    scanner->out->token = JUDO_TOKEN_OBJECT_BEGIN;
     scanner->out->s_state[scanner->out->s_stack] = STATE_PARSE_OBJECT_KEY_OR_OBJECT_END;
-    return JUDO_SUCCESS;
+    return JUDO_RESULT_SUCCESS;
 }
 
 static enum judo_result parse_object_key(struct scanner *scanner, const struct token *token)
 {
-    enum judo_result status = JUDO_SUCCESS;
+    enum judo_result status = JUDO_RESULT_SUCCESS;
     if (token->type == TOKEN_STRING)
     {
         eat(scanner, token);
         scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
-        scanner->out->element = JUDO_OBJECT_NAME;
+        scanner->out->token = JUDO_TOKEN_OBJECT_NAME;
         scanner->out->s_state[scanner->out->s_stack] = STATE_PARSE_OBJECT_VALUE;
     }
 #if defined(JUDO_JSON5)
@@ -2168,7 +2168,7 @@ static enum judo_result parse_object_key(struct scanner *scanner, const struct t
     {
         eat(scanner, token);
         scanner->out->where = (struct judo_span){token->lexeme, token->lexeme_length};
-        scanner->out->element = JUDO_OBJECT_NAME;
+        scanner->out->token = JUDO_TOKEN_OBJECT_NAME;
         scanner->out->s_state[scanner->out->s_stack] = STATE_PARSE_OBJECT_VALUE;
     }
 #endif
@@ -2183,7 +2183,7 @@ static enum judo_result parse_object_value(struct scanner *scanner)
 {
     bool accepted = false;
     enum judo_result status = accept(scanner, TOKEN_COLON, &accepted);
-    if (status == JUDO_SUCCESS)
+    if (status == JUDO_RESULT_SUCCESS)
     {
         if (accepted)
         {
@@ -2202,15 +2202,15 @@ static enum judo_result parse_object_key_or_object_end(struct scanner *scanner)
 {
     struct token token;
     enum judo_result status = peek(scanner, &token);
-    if (status == JUDO_SUCCESS)
+    if (status == JUDO_RESULT_SUCCESS)
     {
         if (token.type == TOKEN_RCURLYB)
         {
             eat(scanner, &token);
             scanner->out->where = (struct judo_span){token.lexeme, token.lexeme_length};
-            scanner->out->element = JUDO_OBJECT_POP;
+            scanner->out->token = JUDO_TOKEN_OBJECT_END;
             scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
-            status = JUDO_SUCCESS;
+            status = JUDO_RESULT_SUCCESS;
         }
         else
         {
@@ -2224,7 +2224,7 @@ static enum judo_result finished_parsing_object_value(struct scanner *scanner)
 {
     struct token token = {0};
     enum judo_result status = peek(scanner, &token);
-    if (status == JUDO_SUCCESS)
+    if (status == JUDO_RESULT_SUCCESS)
     {
         if (token.type == TOKEN_COMMA)
         {
@@ -2234,7 +2234,7 @@ static enum judo_result finished_parsing_object_value(struct scanner *scanner)
 #else
             // Get the next token, which is supposed to be an object name.
             status = peek(scanner, &token);
-            if (status == JUDO_SUCCESS)
+            if (status == JUDO_RESULT_SUCCESS)
             {
                 status = parse_object_key(scanner, &token);
             }
@@ -2246,9 +2246,9 @@ static enum judo_result finished_parsing_object_value(struct scanner *scanner)
             {
                 eat(scanner, &token);
                 scanner->out->where = (struct judo_span){token.lexeme, token.lexeme_length};
-                scanner->out->element = JUDO_OBJECT_POP;
+                scanner->out->token = JUDO_TOKEN_OBJECT_END;
                 scanner->out->s_state[scanner->out->s_stack] = STATE_FINISHED_PARSING_VALUE;
-                status = JUDO_SUCCESS;
+                status = JUDO_RESULT_SUCCESS;
             }
             else
             {
@@ -2275,7 +2275,7 @@ static enum judo_result parse_value(struct scanner *scanner, const char *msg)
 
         struct token token;
         status = peek(scanner, &token);
-        if (status == JUDO_SUCCESS)
+        if (status == JUDO_RESULT_SUCCESS)
         {
             switch (token.type)
             {
@@ -2332,7 +2332,7 @@ static enum judo_result parse_root(struct scanner *scanner)
     // RFC 4627 requires the top-level value to be an object or array.
     struct token token;
     enum judo_result status = peek(scanner, &token);
-    if (status == JUDO_SUCCESS)
+    if (status == JUDO_RESULT_SUCCESS)
     {
         switch (token.type)
         {
@@ -2374,7 +2374,7 @@ static enum judo_result parse_root(struct scanner *scanner)
 
 enum judo_result judo_scan(struct judo_stream *stream, const char *source, int32_t length) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    enum judo_result status = JUDO_INVALID_OPERATION;
+    enum judo_result status = JUDO_RESULT_INVALID_OPERATION;
 
     if ((stream != NULL) && (source != NULL))
     {
@@ -2383,7 +2383,7 @@ enum judo_result judo_scan(struct judo_stream *stream, const char *source, int32
         scanner.string = (const uint8_t *)source;
         scanner.length = length;
         scanner.at = stream->s_at;
-        status = JUDO_SUCCESS;
+        status = JUDO_RESULT_SUCCESS;
 
         // If we finished parsing a value at the current stack depth, then pop the stack.
         // We do this before the switch statement to ensure it always operators on an unfinished value.
@@ -2393,11 +2393,11 @@ enum judo_result judo_scan(struct judo_stream *stream, const char *source, int32
             {
                 struct token token = {0};
                 status = peek(&scanner, &token);
-                if (status == JUDO_SUCCESS)
+                if (status == JUDO_RESULT_SUCCESS)
                 {
                     if (token.type == TOKEN_EOF)
                     {
-                        stream->element = JUDO_EOF;
+                        stream->token = JUDO_TOKEN_EOF;
                         stream->where = (struct judo_span){token.lexeme, token.lexeme_length};
                         stream->s_state[stream->s_stack] = STATE_FINISHED_PARSING;
                     }
@@ -2414,7 +2414,7 @@ enum judo_result judo_scan(struct judo_stream *stream, const char *source, int32
             }
         }
 
-        if (status == JUDO_SUCCESS)
+        if (status == JUDO_RESULT_SUCCESS)
         {
             switch (stream->s_state[stream->s_stack])
             {
@@ -2443,22 +2443,22 @@ enum judo_result judo_scan(struct judo_stream *stream, const char *source, int32
                 break;
 
             case STATE_PARSING_ERROR:
-                status = JUDO_BAD_SYNTAX;
+                status = JUDO_RESULT_BAD_SYNTAX;
                 break;
 
             case STATE_ENCODING_ERROR:
-                status = JUDO_ILLEGAL_BYTE_SEQUENCE;
+                status = JUDO_RESULT_ILLEGAL_BYTE_SEQUENCE;
                 break;
 
             case STATE_MAX_NESTING_ERROR:
-                status = JUDO_MAXIMUM_NESTING;
+                status = JUDO_RESULT_MAXIMUM_NESTING;
                 break;
 
             case STATE_FINISHED_PARSING:
                 break;
 
             default:
-                status = JUDO_MALFUNCTION;
+                status = JUDO_RESULT_MALFUNCTION;
                 break;
             }
 

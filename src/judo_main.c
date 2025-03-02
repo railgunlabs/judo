@@ -290,9 +290,9 @@ static void judo_main(const struct program_options *options)
     struct judo_error error = {0};
     struct judo_value *root;
     const enum judo_result result = judo_parse(dynbuf, dynbuf_length, &root, &error, NULL, memfunc);
-    if (result != JUDO_SUCCESS)
+    if (result != JUDO_RESULT_SUCCESS)
     {
-        if (result == JUDO_OUT_OF_MEMORY)
+        if (result == JUDO_RESULT_OUT_OF_MEMORY)
         {
             fprintf(stderr, "error: memory allocation failed");
             free(dynbuf);

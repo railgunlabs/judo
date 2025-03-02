@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Feb 18th 2025" "Judo 1.0.0-rc2"
+.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc2"
 .SH NAME
 judo_stringify \- lexeme to decoded string
 .SH LIBRARY
@@ -20,16 +20,16 @@ If \f[I]buf\f[R] is null, then \f[I]buflen\f[R] must be zero and the implementat
 Calling the function this way is useful for calculating the total size of \f[I]buf\f[R].
 .SH RETURN VALUE
 .TP
-JUDO_SUCCESS
+JUDO_RESULT_SUCCESS
 If the numeric value was written to \f[C]number\f[R].
 .TP
-JUDO_INVALID_OPERATION
+JUDO_RESULT_INVALID_OPERATION
 If \f[C]stream\f[R], \f[C]string\f[R], or \f[C]number\f[R] are NULL.
 .TP
-JUDO_NO_BUFFER_SPACE
+JUDO_RESULT_NO_BUFFER_SPACE
 If \f[I]buf\f[R] is too small to accommodate the string.
 .TP
-JUDO_MALFUNCTION
+JUDO_RESULT_MALFUNCTION
 If there is a defect in the implementation.
 .SH AUTHOR
 .UR https://railgunlabs.com

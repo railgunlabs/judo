@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Feb 18th 2025" "Judo 1.0.0-rc2"
+.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc2"
 .SH NAME
 judo.h \- embeddable JSON Parser
 .SH LIBRARY
@@ -10,13 +10,12 @@ Embeddable JSON parser (libjudo, -ljudo)
 .SH DESCRIPTION
 Embeddable JSON Parser.
 .SS Scanner
-The Judo scanner processes JSON source text into semantic elements.
-Semantic elements are notable marker points within the JSON stream that may or may not correspond with a JSON token.
-You can find semantic elements with the \f[B]judo_scan\f[R](3) function, which returns them one-at-a-time.
-This function is intended to be called repeatedly until all semantic elements have been processed or an error halts the scanner.
+The Judo scanner processes JSON source text into tokens.
+You discover tokens with the \f[B]judo_scan\f[R](3) function, which returns them incrementally.
+This function is intended to be called repeatedly until all tokens have been scanned.
 .PP
 The JSON source text must be encoded as UTF-8.
-It can be null or none-null terminated.
+It can be null or non-null terminated.
 In the following code snippet, a null-terminated string is defined:
 .PP
 .in +4n
@@ -35,16 +34,16 @@ struct judo_stream stream = {0};
 .EE
 .in
 .PP
-Next, it’s time to find semantic elements by repeatedly calling the \f[B]judo_scan\f[R](3) function.
-In the subsequent code snippet, \f[B]judo_scan\f[R](3) is called repeatedly until all semantic elements have been processed or an error aborts scanning.
+Next, tokens are discovered by repeatedly calling the \f[B]judo_scan\f[R](3) function.
+In the subsequent code snippet, the function is called repeatedly until all tokens have been processed or an error is detected.
 .PP
 .in +4n
 .EX
 enum judo_result result;
 for (;;) {
     result = judo_scan(&stream, json, -1);
-     if (result == JUDO_SUCCESS) {
-        if (stream.element == JUDO_EOF) {
+     if (result == JUDO_RESULT_SUCCESS) {
+        if (stream.token == JUDO_TOKEN_EOF) {
             // successfully completed scanning
         }
     } else {
@@ -55,26 +54,27 @@ for (;;) {
 .in
 .PP
 After each call to \f[B]judo_scan\f[R](3), you can inspect certain fields of the \f[B]judo_stream\f[R](3) structure.
-These fields are \f[I]element\f[R], \f[I]where\f[R], and \f[I]error\f[R].
+These fields are \f[I]token\f[R], \f[I]where\f[R], and \f[I]error\f[R].
 .PP
-The value of the \f[I]element\f[R] field is one of the \f[B]judo_element\f[R](3) enumeration constants.
-It describes the semantic element that was just processed.
+The value of the \f[I]token\f[R] field is one of the \f[B]judo_token\f[R](3) enumeration constants.
+It describes the token that was just processed.
 .PP
-The \f[I]where\f[R] field describe the span of UTF-8 code units where the semantic element was found in the source text.
+The \f[I]where\f[R] field describe the span of UTF-8 code units where the token was found in the source text.
 In the case of literal values, like numbers and strings, the span of code units defines its lexeme.
 .PP
 The \f[I]error\f[R] field is a null-terminated UTF-8 encoded string that describes the details of any error in US English.
-You’ll know an error occurred because \f[B]judo_scan\f[R](3) will return a value other than \f[B]JUDO_SUCCESS\f[R].
-.SS Processing semantic elements
+You’ll know an error occurred because \f[B]judo_scan\f[R](3) will return a value other than \f[B]JUDO_RESULT_SUCCESS\f[R].
+.SS Processing tokens
 .PP
-Arrays and objects consist of push/pop element pairs.
-Conceptually, these pairs are like a stack data structure where every “push” is matched by a “pop” element.
+Arrays and objects consist of start/end token pairs.
+In well-formed JSON, each “start” token will always be matched by an “end” token.
+In malformed JSON, the scanner will report an error if there is a mismatch.
 .PP
 Elements of an array are returned as sequential values.
-Members of an object are returned as element pairs: a name is returned first, then the value is returned next.
+Members of an object are returned as token pairs: a name is returned first, then the value is returned next.
 .SS Extracting numeric values
 .PP
-When a semantic element is a number its floating point value can be obtained with the \f[B]judo_numberify\f[R](3) function.
+When a token is a number its floating point value can be obtained with the \f[B]judo_numberify\f[R](3) function.
 This function accepts a \f[B]judo_number\f[R](3) which is a floating point storage type chosen when configuring the Judo library.
 .PP
 .in +4n
@@ -86,7 +86,7 @@ judo_numberify(&source[stream.where.offset], stream.where.length, &number);
 .PP
 .SS Extracting string values
 .PP
-When a semantic element is a string or object name the decoded string value can be obtained with the \f[B]judo_stringify\f[R](3) function.
+When a token is a string or object name the decoded string value can be obtained with the \f[B]judo_stringify\f[R](3) function.
 This function accepts a buffer to write the decoded string data to, as well as a “length” parameter for the buffer.
 The length parameter represents the buffer’s capacity on input.
 The implementation will update this parameter with the number of code units written to the buffer on output.
@@ -116,7 +116,7 @@ judo_stringify(&source[stream.where.offset], stream.where.length, NULL, &buflen)
 .PP
 .SS Handling errors
 .PP
-If an error occurs, then the \f[B]judo_scan\f[R](3) function will return a \f[B]judo_result\f[R](3) other than \f[B]JUDO_SUCCESS\f[R].
+If an error occurs, then the \f[B]judo_scan\f[R](3) function will return a \f[B]judo_result\f[R](3) other than \f[B]JUDO_RESULT_SUCCESS\f[R].
 The result code indicates the general classification of the error, e.g. syntax error, bad encoding, etc.
 Regardless of the error code, the \f[I]error\f[R] field of the \f[B]judo_stream\f[R](3) structure will be populated with a UTF-8 encoded error message written in US English.
 .PP
@@ -162,8 +162,8 @@ _
 \fBjudo_result\fR(3);T{
 Function status code.
 T}
-\fBjudo_element\fR(3);T{
-Semantic element.
+\fBjudo_token\fR(3);T{
+Lexical element.
 T}
 .TE
 .SS Parser
@@ -175,14 +175,14 @@ The \f[B]judo_parse\f[R](3) function parses JSON source text, encoded as UTF-8, 
 The source text can be null or non-null terminated.
 In the subsequent example, it is null terminated which is communicated by passing \f[C]-1\f[R] to the functions \f[C]length\f[R] parameter.
 .PP
-Once the tree has been processed, you must free it with \f[B]judo_free\f[R](3).
+Once the tree has been processed, you can free it with \f[B]judo_free\f[R](3).
 .PP
 .in +4n
 .EX
 const char *json = "{\\"abc\\":123}";
 struct judo_value *root = NULL;
 enum judo_result result = judo_parse(json, -1, &root, NULL, NULL, memfunc);
-if (result == JUDO_SUCCESS) {
+if (result == JUDO_RESULT_SUCCESS) {
     // Process the tree here, then
     // free it once you're done.
     judo_free(root, NULL, memfunc);
@@ -194,7 +194,7 @@ The Judo parser requires a dynamic memory allocator, which you must implement yo
 The previous code snippet used \f[C]memfunc\f[R] to refer to the implied memory allocator function.
 .SS Handling errors
 .PP
-If an error occurs, then \f[B]judo_parse\f[R](3) will return an error code (a result code other than \f[B]JUDO_SUCCESS\f[R]).
+If an error occurs, then \f[B]judo_parse\f[R](3) will return an error code (a result code other than \f[B]JUDO_RESULT_SUCCESS\f[R]).
 The result code indicates the general classification of the error, e.g. syntax error, bad encoding, etc.
 Regardless of the error code, the \f[B]judo_error\f[R](3) argument, if provided, will be populated with details about the error.
 .SS Processing the in-memory tree
@@ -267,11 +267,11 @@ If \f[B]judo_next\f[R](3) returns NULL, then there are no more elements.
 .in +4n
 .EX
 if (judo_gettype(root) == JUDO_TYPE_ARRAY) {
-    struct judo_value *element = judo_first(root);
-    while (element != NULL) {
-        // Process the current element, then
-        // grab to the next element.
-        element = judo_next(element);
+    struct judo_value *token = judo_first(root);
+    while (token != NULL) {
+        // Process the current token, then
+        // grab to the next token.
+        token = judo_next(token);
     }
 }
 .EE
