@@ -87,11 +87,12 @@ struct judo_stream
 #if defined(JUDO_PARSER)
 typedef void *(*judo_memfunc)(void *user_data, void *ptr, size_t size);
 
-typedef struct judo_value judo_value;
-typedef struct judo_member judo_member;
+struct judo_value;
+struct judo_member;
 
 enum judo_type
 {
+    JUDO_TYPE_INVALID,
     JUDO_TYPE_NULL,
     JUDO_TYPE_BOOL,
     JUDO_TYPE_NUMBER,
@@ -120,26 +121,26 @@ enum judo_result judo_numberify(const char *lexeme, int32_t length, judo_number 
 #if defined(JUDO_PARSER)
 // Parses the input into an in-memory tree. Pass '-1' as the input length
 // if the input is null terminated.
-enum judo_result judo_parse(const char *source, int32_t length, judo_value **root, struct judo_error *error, void *user_data, judo_memfunc memfunc);
+enum judo_result judo_parse(const char *source, int32_t length, struct judo_value **root, struct judo_error *error, void *user_data, judo_memfunc memfunc);
 
 // Pass the root value returned from judo_parse() to free the entire tree.
-enum judo_result judo_free(judo_value *root, void *user_data, judo_memfunc memfunc);
+enum judo_result judo_free(struct judo_value *root, void *user_data, judo_memfunc memfunc);
 
-enum judo_type judo_gettype(const judo_value *value);
+enum judo_type judo_gettype(const struct judo_value *value);
 
-bool judo_tobool(judo_value *value);
+bool judo_tobool(struct judo_value *value);
 
-int32_t judo_len(const judo_value *value);
+int32_t judo_len(struct judo_value *value);
 
-judo_value *judo_first(judo_value *value);
-judo_value *judo_next(judo_value *value);
+struct judo_value *judo_first(struct judo_value *value);
+struct judo_value *judo_next(struct judo_value *value);
 
-judo_member *judo_membfirst(judo_value *value);
-judo_member *judo_membnext(judo_member *member);
-judo_value *judo_membvalue(judo_member *member);
+struct judo_member *judo_membfirst(struct judo_value *value);
+struct judo_member *judo_membnext(struct judo_member *member);
+struct judo_value *judo_membvalue(struct judo_member *member);
 
-struct judo_span judo_name2span(const judo_member *member);
-struct judo_span judo_value2span(const judo_value *value);
+struct judo_span judo_name2span(const struct judo_member *member);
+struct judo_span judo_value2span(const struct judo_value *value);
 #endif
 
 #endif
