@@ -134,7 +134,6 @@ static void compulate_source_location(const char *input, int32_t location, int *
 static void print_tree(struct judo_value *value, const char *source, const struct program_options *options)
 {
     struct judo_span where = {0};
-
     switch (judo_gettype(value))
     {
     case JUDO_TYPE_NULL:
@@ -172,6 +171,9 @@ static void print_tree(struct judo_value *value, const char *source, const struc
         }
         putchar('}');
         break;
+
+    default:
+        break;
     }
 }
 
@@ -198,7 +200,6 @@ static void pretty_print_indent(int depth, const struct program_options *options
 static void pretty_print_tree(struct judo_value *value, const char *source, int depth, const struct program_options *options)
 {
     struct judo_span where = {0};
-
     switch (judo_gettype(value))
     {
     case JUDO_TYPE_NULL:
@@ -260,6 +261,9 @@ static void pretty_print_tree(struct judo_value *value, const char *source, int 
             pretty_print_indent(depth, options);
             putchar('}');
         }
+        break;
+
+    default:
         break;
     }
 }

@@ -484,7 +484,7 @@ enum judo_type judo_gettype(const judo_value *value) // cppcheck-suppress misra-
     enum judo_type type;
     if (value == NULL)
     {
-        type = JUDO_TYPE_NULL;
+        type = JUDO_TYPE_INVALID;
     }
     else
     {

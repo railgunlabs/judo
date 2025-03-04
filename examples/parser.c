@@ -95,8 +95,11 @@ void print_tree(const char *source, struct judo_value *value)
         }
         putchar('}');
         break;
-    }
 //! [parser_process_object]
+
+    default:
+        break;
+    }
 }
 
 int main(int argc, char *argv[])

@@ -92,6 +92,7 @@ typedef struct judo_member judo_member;
 
 enum judo_type
 {
+    JUDO_TYPE_INVALID,
     JUDO_TYPE_NULL,
     JUDO_TYPE_BOOL,
     JUDO_TYPE_NUMBER,
