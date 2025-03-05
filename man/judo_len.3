@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc3"
+.TH "JUDO" "3" "Mar 5th 2025" "Judo 1.0.0-rc4"
 .SH NAME
 judo_len \- array or object length
 .SH LIBRARY
@@ -7,7 +7,7 @@ Embeddable JSON parser (libjudo, -ljudo)
 .nf
 .B #include <judo.h>
 .PP
-.BI "int32_t judo_len(const judo_value *" value ");"
+.BI "int32_t judo_len(judo_value *" value ");"
 .fi
 .SH DESCRIPTION
 The \f[B]judo_len\f[R](3) function returns the number of elements or members of an array or object, depending on the type of \f[I]value\f[R].

@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc3"
+.TH "JUDO" "3" "Mar 5th 2025" "Judo 1.0.0-rc4"
 .SH NAME
 judo_free \- free the in-memory tree
 .SH LIBRARY
@@ -7,16 +7,16 @@ Embeddable JSON parser (libjudo, -ljudo)
 .nf
 .B #include <judo.h>
 .PP
-.BI "enum judo_result judo_free(judo_value *" root ", void *" user_data ", judo_memfunc " memfunc ");"
+.BI "enum judo_result judo_free(judo_value *" root ", void *" udata ", judo_memfunc " memfunc ");"
 .fi
 .SH DESCRIPTION
 The \f[B]judo_free\f[R](3) function releases memory associated with \f[I]root\f[R] using \f[I]memfunc\f[R].
 The argument \f[I]root\f[R] must reference the root value of the JSON tree as returned by \f[B]judo_parse\f[R](3) otherwise the behavior is undefined.
 .PP
 The \f[I]memfunc\f[R] function must implement a memory allocator as described in \f[B]judo_memfunc\f[R](3).
-The \f[I]user_data\f[R] pointer is passed to \f[I]memfunc\f[R] as-is.
+The \f[C]user_data\f[R] pointer is passed to \f[I]memfunc\f[R] as-is.
 .PP
-The \f[B]judo_free\f[R](3) function is intended for a \f[I]memfunc\f[R] implementation that utilize general purpose memory allocators, like \f[B]malloc\f[R](3) and \f[B]free\f[R](3).
+The \f[B]judo_free\f[R](3) function is intended for a \f[I]memfunc\f[R] implementation that utilizes general purpose memory allocators, like \f[B]malloc\f[R](3) and \f[B]free\f[R](3).
 If a specialized allocator is implemented where allocated objects can be efficiently deallocated all at once (e.g. a region-based memory allocator), then \f[B]judo_free\f[R](3) does not need to be called as the caller can perform deallocation themselves.
 .SH RETURN VALUE
 .TP

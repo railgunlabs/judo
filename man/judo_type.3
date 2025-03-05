@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc3"
+.TH "JUDO" "3" "Mar 5th 2025" "Judo 1.0.0-rc4"
 .SH NAME
 judo_type \- JSON value type
 .SH LIBRARY
@@ -9,6 +9,7 @@ Embeddable JSON parser (libjudo, -ljudo)
 .PP
 .B enum judo_type {
 .RS
+.B JUDO_TYPE_INVALID,
 .B JUDO_TYPE_NULL,
 .B JUDO_TYPE_BOOL,
 .B JUDO_TYPE_NUMBER,
@@ -21,6 +22,9 @@ Embeddable JSON parser (libjudo, -ljudo)
 .SH DESCRIPTION
 The type of a JSON value can be queried with the \f[B]judo_gettype\f[R](3) function.
 .SH CONSTANTS
+.TP
+.BR JUDO_TYPE_INVALID
+Not a valid type.
 .TP
 .BR JUDO_TYPE_NULL
 Null type.

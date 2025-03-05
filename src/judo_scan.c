@@ -83,8 +83,8 @@ static inline bool is_low_surrogate(unichar c)
     return (c >= UNICHAR_C(0xDC00)) && (c <= UNICHAR_C(0xDFFF));
 }
 
-// The C functions isdigit(), isalpha(), isxidigt() are locale specific and therefore not used
-// by this implementation. Non-locale, JSON-specific variants are implemented below:
+// The C functions isdigit(), isalpha(), and isxidigt() are locale specific and therefore not
+// used by this implementation. Non-locale, JSON-specific variants are implemented below:
 
 static inline bool judo_isalpha(unichar codepoint)
 {
@@ -445,7 +445,7 @@ static bool is_match(const uint8_t *string, const char *prefix, int32_t string_l
 
 #if defined(JUDO_HAVE_FLOATS)
 #if defined(JUDO_JSON5)
-// This only parses hexidecimal numbers.
+// This atol() implementation exclusively parses hexidecimal numbers.
 static enum judo_result json_atol(const char *string, int32_t string_length, judo_number *number)
 {
     enum judo_result status;

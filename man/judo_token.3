@@ -1,6 +1,6 @@
-.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc3"
+.TH "JUDO" "3" "Mar 5th 2025" "Judo 1.0.0-rc4"
 .SH NAME
-judo_token \- lexical element
+judo_token \- semantic element
 .SH LIBRARY
 Embeddable JSON parser (libjudo, -ljudo)
 .SH SYNOPSIS
@@ -25,7 +25,8 @@ Embeddable JSON parser (libjudo, -ljudo)
 .B };
 .fi
 .SH DESCRIPTION
-This enumeration represents a lexically important element within the JSON stream.
+This enumeration represents a semantically important element within the JSON stream.
+They may or may not correspond with a primitive JSON token.
 .SH CONSTANTS
 .TP
 .BR JUDO_TOKEN_INVALID

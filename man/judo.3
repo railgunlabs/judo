@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Mar 2nd 2025" "Judo 1.0.0-rc3"
+.TH "JUDO" "3" "Mar 5th 2025" "Judo 1.0.0-rc4"
 .SH NAME
 judo.h \- embeddable JSON Parser
 .SH LIBRARY
@@ -10,7 +10,7 @@ Embeddable JSON parser (libjudo, -ljudo)
 .SH DESCRIPTION
 Embeddable JSON Parser.
 .SS Scanner
-The Judo scanner processes JSON source text into tokens.
+The Judo scanner processes JSON source text into semantic tokens.
 You discover tokens with the \f[B]judo_scan\f[R](3) function, which returns them incrementally.
 This function is intended to be called repeatedly until all tokens have been scanned.
 .PP
@@ -59,7 +59,7 @@ These fields are \f[I]token\f[R], \f[I]where\f[R], and \f[I]error\f[R].
 The value of the \f[I]token\f[R] field is one of the \f[B]judo_token\f[R](3) enumeration constants.
 It describes the token that was just processed.
 .PP
-The \f[I]where\f[R] field describe the span of UTF-8 code units where the token was found in the source text.
+The \f[I]where\f[R] field describes the span of UTF-8 code units where the token was found in the source text.
 In the case of literal values, like numbers and strings, the span of code units defines its lexeme.
 .PP
 The \f[I]error\f[R] field is a null-terminated UTF-8 encoded string that describes the details of any error in US English.
@@ -163,7 +163,7 @@ _
 Function status code.
 T}
 \fBjudo_token\fR(3);T{
-Lexical element.
+Semantic element.
 T}
 .TE
 .SS Parser
