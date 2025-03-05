@@ -11,6 +11,12 @@
  *  license, as set out in <https://railgunlabs.com/judo/license/>.
  */
 
+// The Judo parser does _not_ use a union type to represent JSON values like most
+// other JSON parsers do. The reasons are (1) MISRA C:2012 Rule 19.2 advises against
+// union types and Judo strives for strong conformance and (2) JSON values are more
+// compactly represented in in-memory using smaller structures, where possible, and
+// reserving larger structures exclusively for JSON types that require it.
+
 #include "judo.h"
 
 #if defined(JUDO_PARSER)
@@ -33,20 +39,20 @@ struct judo_member
 
 struct boolean
 {
-    judo_value shared;
+    judo_value descriptor; // Must be the first field in-memory for casting.
     uint8_t value;
 };
 
 struct array
 {
-    judo_value shared;
+    judo_value descriptor; // Must be the first field in-memory for casting.
     judo_value *next;
     int32_t length;
 };
 
 struct object
 {
-    judo_value shared;
+    judo_value descriptor; // Must be the first field in-memory for casting.
     judo_member *members;
     int32_t size;
 };
@@ -60,10 +66,10 @@ struct parse_stack
 
 struct context
 {
-    void *udata;
-    judo_memfunc memfunc;
+    void *udata; // User pointer passed through to the users custom memory allocator function.
+    judo_memfunc memfunc; // User custom memory allocation function.
     const char *string;
-    judo_value *root;
+    judo_value *root; // Root value of the JSON structure.
     int32_t stack_depth;
     struct parse_stack stack[JUDO_MAXDEPTH]; // Arrays and objects.
 };
@@ -80,30 +86,30 @@ static void *judo_alloc(struct context *ctx, size_t size)
 
 static struct object *to_object(void *value)
 {
-    struct object *object = (struct object *)value; // cppcheck-suppress misra-c2012-11.5
+    struct object *object = (struct object *)value; // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
     // LCOV_EXCL_START
     assert(object != NULL);
-    assert(object->shared.type == (uint8_t)JUDO_TYPE_OBJECT);
+    assert(object->descriptor.type == (uint8_t)JUDO_TYPE_OBJECT);
     // LCOV_EXCL_STOP
     return object;
 }
 
 static struct array *to_array(void *value)
 {
-    struct array *array = (struct array *)value; // cppcheck-suppress misra-c2012-11.5
+    struct array *array = (struct array *)value; // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
     // LCOV_EXCL_START
     assert(array != NULL);
-    assert(array->shared.type == (uint8_t)JUDO_TYPE_ARRAY);
+    assert(array->descriptor.type == (uint8_t)JUDO_TYPE_ARRAY);
     // LCOV_EXCL_STOP
     return array;
 }
 
 static struct boolean *to_boolean(void *value)
 {
-    struct boolean *boolean = (struct boolean *)value; // cppcheck-suppress misra-c2012-11.5
+    struct boolean *boolean = (struct boolean *)value; // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
     // LCOV_EXCL_START
     assert(boolean != NULL);
-    assert(boolean->shared.type == (uint8_t)JUDO_TYPE_BOOL);
+    assert(boolean->descriptor.type == (uint8_t)JUDO_TYPE_BOOL);
     // LCOV_EXCL_STOP
     return boolean;
 }
@@ -160,38 +166,39 @@ static void link(struct context *ctx, judo_value *value)
 static enum judo_result process_value(struct context *ctx, const struct judo_stream *js)
 {
     enum judo_result result = JUDO_RESULT_SUCCESS;
-
     if (js->token == JUDO_TOKEN_ARRAY_BEGIN)
     {
-        struct array *array = judo_alloc(ctx, sizeof(array[0])); // cppcheck-suppress misra-c2012-11.5
+        assert (ctx->stack_depth < JUDO_MAXDEPTH); // LCOV_EXCL_BR_LINE
+        struct array *array = judo_alloc(ctx, sizeof(array[0])); // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
         if (array == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
         }
         else
         {
-            array->shared.type = JUDO_TYPE_ARRAY;
-            array->shared.where = js->where;
-            link(ctx, &array->shared);
+            array->descriptor.type = JUDO_TYPE_ARRAY;
+            array->descriptor.where = js->where;
+            link(ctx, &array->descriptor);
 
-            ctx->stack[ctx->stack_depth].collection = &array->shared;
+            ctx->stack[ctx->stack_depth].collection = &array->descriptor;
             ctx->stack_depth += 1;
         }
     }
     else if (js->token == JUDO_TOKEN_OBJECT_BEGIN)
     {
-        struct object *object = judo_alloc(ctx, sizeof(object[0])); // cppcheck-suppress misra-c2012-11.5
+        assert (ctx->stack_depth < JUDO_MAXDEPTH); // LCOV_EXCL_BR_LINE
+        struct object *object = judo_alloc(ctx, sizeof(object[0])); // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
         if (object == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
         }
         else
         {
-            object->shared.type = JUDO_TYPE_OBJECT;
-            object->shared.where = js->where;
-            link(ctx, &object->shared);
+            object->descriptor.type = JUDO_TYPE_OBJECT;
+            object->descriptor.where = js->where;
+            link(ctx, &object->descriptor);
 
-            ctx->stack[ctx->stack_depth].collection = &object->shared;
+            ctx->stack[ctx->stack_depth].collection = &object->descriptor;
             ctx->stack_depth += 1;
         }
     }
@@ -208,7 +215,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
     }
     else if (js->token == JUDO_TOKEN_NULL)
     {
-        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
+        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
         if (value == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -223,22 +230,22 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
     else if ((js->token == JUDO_TOKEN_TRUE) ||
              (js->token == JUDO_TOKEN_FALSE))
     {
-        struct boolean *boolean = judo_alloc(ctx, sizeof(boolean[0])); // cppcheck-suppress misra-c2012-11.5
+        struct boolean *boolean = judo_alloc(ctx, sizeof(boolean[0])); // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
         if (boolean == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
         }
         else
         {
-            boolean->shared.type = JUDO_TYPE_BOOL;
-            boolean->shared.where = js->where;
+            boolean->descriptor.type = JUDO_TYPE_BOOL;
+            boolean->descriptor.where = js->where;
             boolean->value = (js->token == JUDO_TOKEN_TRUE) ? (uint8_t)1 : (uint8_t)0;
-            link(ctx, &boolean->shared);
+            link(ctx, &boolean->descriptor);
         }
     }
     else if (js->token == JUDO_TOKEN_NUMBER)
     {
-        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
+        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
         if (value == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -252,7 +259,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
     }
     else if (js->token == JUDO_TOKEN_STRING)
     {
-        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
+        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
         if (value == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -273,7 +280,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
         assert(top->collection->type == (uint8_t)JUDO_TYPE_OBJECT); // LCOV_EXCL_BR_LINE
 
         // Allocate a structure to represent the object member.
-        judo_member *member = judo_alloc(ctx, sizeof(member[0])); // cppcheck-suppress misra-c2012-11.5
+        judo_member *member = judo_alloc(ctx, sizeof(member[0])); // cppcheck-suppress misra-c2012-11.5 ; Cast from void pointer to object pointer.
         if (member == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -489,7 +496,7 @@ enum judo_result judo_free(judo_value *root, void *udata, judo_memfunc memfunc)
 
                 // LCOV_EXCL_START
                 default:
-                    result = JUDO_RESULT_MALFUNCTION; // This should never be reachable.
+                    result = JUDO_RESULT_MALFUNCTION; // This will never be reachable.
                     break;
                 // LCOV_EXCL_STOP
                 }
