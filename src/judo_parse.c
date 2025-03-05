@@ -19,58 +19,58 @@
 
 struct judo_value
 {
-    struct judo_value *next;
+    judo_value *next;
     struct judo_span where;
     uint8_t type;
 };
 
 struct judo_member
 {
-    struct judo_member *next;
-    struct judo_value *value;
+    judo_member *next;
+    judo_value *value;
     struct judo_span name;
 };
 
-struct judo_boolean
+struct boolean
 {
-    struct judo_value shared;
+    judo_value shared;
     uint8_t value;
 };
 
-struct judo_array
+struct array
 {
-    struct judo_value shared;
-    struct judo_value *next;
+    judo_value shared;
+    judo_value *next;
     int32_t length;
 };
 
-struct judo_object
+struct object
 {
-    struct judo_value shared;
-    struct judo_member *members;
+    judo_value shared;
+    judo_member *members;
     int32_t size;
 };
 
-struct compound
+struct parse_stack
 {
-    struct judo_value *value;
-    struct judo_value *elements_tail;
-    struct judo_member *members_tail;
+    judo_value *collection; // The current array or object being parsed (or null if neither are being parsed).
+    judo_value *elements_tail; // Last array element of the current array being parsed.
+    judo_member *members_tail; // Last object member of the current object being parsed.
 };
 
-struct parser
+struct context
 {
-    void *user_data;
+    void *udata;
     judo_memfunc memfunc;
     const char *string;
-    struct judo_value *root;
-    int32_t depth;
-    struct compound stack[JUDO_MAXDEPTH]; // Arrays and objects.
+    judo_value *root;
+    int32_t stack_depth;
+    struct parse_stack stack[JUDO_MAXDEPTH]; // Arrays and objects.
 };
 
-static void *judo_alloc(struct parser *parser, size_t size)
+static void *judo_alloc(struct context *ctx, size_t size)
 {
-    void *ptr = parser->memfunc(parser->user_data, NULL, size);
+    void *ptr = ctx->memfunc(ctx->udata, NULL, size);
     if (ptr != NULL)
     {
         (void)memset(ptr, 0, size);
@@ -78,52 +78,57 @@ static void *judo_alloc(struct parser *parser, size_t size)
     return ptr;
 }
 
-static struct judo_object *to_object(struct judo_value *value)
+static struct object *to_object(void *value)
 {
+    struct object *object = (struct object *)value; // cppcheck-suppress misra-c2012-11.5
     // LCOV_EXCL_START
-    assert(value != NULL);
-    assert(value->type == (uint8_t)JUDO_TYPE_OBJECT);
+    assert(object != NULL);
+    assert(object->shared.type == (uint8_t)JUDO_TYPE_OBJECT);
     // LCOV_EXCL_STOP
-
-    void *ptr = value;
-    return (struct judo_object *)ptr; // cppcheck-suppress misra-c2012-11.5
+    return object;
 }
 
-static struct judo_array *to_array(struct judo_value *value)
+static struct array *to_array(void *value)
 {
-    assert(value->type == (uint8_t)JUDO_TYPE_ARRAY); // LCOV_EXCL_BR_LINE
-    void *ptr = value;
-    return (struct judo_array *)ptr; // cppcheck-suppress misra-c2012-11.5
+    struct array *array = (struct array *)value; // cppcheck-suppress misra-c2012-11.5
+    // LCOV_EXCL_START
+    assert(array != NULL);
+    assert(array->shared.type == (uint8_t)JUDO_TYPE_ARRAY);
+    // LCOV_EXCL_STOP
+    return array;
 }
 
-static struct judo_boolean *to_boolean(struct judo_value *value)
+static struct boolean *to_boolean(void *value)
 {
-    assert(value->type == (uint8_t)JUDO_TYPE_BOOL); // LCOV_EXCL_BR_LINE
-    void *ptr = value;
-    return (struct judo_boolean *)ptr; // cppcheck-suppress misra-c2012-11.5
+    struct boolean *boolean = (struct boolean *)value; // cppcheck-suppress misra-c2012-11.5
+    // LCOV_EXCL_START
+    assert(boolean != NULL);
+    assert(boolean->shared.type == (uint8_t)JUDO_TYPE_BOOL);
+    // LCOV_EXCL_STOP
+    return boolean;
 }
 
-static void link(struct parser *parser, struct judo_value *value)
+static void link(struct context *ctx, judo_value *value)
 {
     // LCOV_EXCL_START
-    assert(parser != NULL);
+    assert(ctx != NULL);
     assert(value != NULL);
     // LCOV_EXCL_STOP
 
     // Assume the first JSON value encountered is the root value.
-    if (parser->root == NULL)
+    if (ctx->root == NULL)
     {
-        parser->root = value;
+        ctx->root = value;
     }
 
     // Check if processing an token of an array or a member of an object.
     // If so, then link the JSON value with the array/object.
-    if (parser->depth > 0)
+    if (ctx->stack_depth > 0)
     {
-        struct compound *top = &parser->stack[parser->depth - 1];
-        if (top->value->type == (uint8_t)JUDO_TYPE_ARRAY)
+        struct parse_stack *top = &ctx->stack[ctx->stack_depth - 1];
+        if (top->collection->type == (uint8_t)JUDO_TYPE_ARRAY)
         {
-            struct judo_array *array = to_array(top->value);
+            struct array *array = to_array(top->collection);
             if (top->elements_tail == NULL)
             {
                 assert(array->next == NULL); // LCOV_EXCL_BR_LINE: The head should be null if the tail is null.
@@ -141,24 +146,24 @@ static void link(struct parser *parser, struct judo_value *value)
         else
         {
             // LCOV_EXCL_START
-            assert(top->value->type == (uint8_t)JUDO_TYPE_OBJECT);
+            assert(top->collection->type == (uint8_t)JUDO_TYPE_OBJECT);
             assert(top->members_tail != NULL);
             // LCOV_EXCL_STOP
 
-            struct judo_object *object = to_object(top->value);
+            struct object *object = to_object(top->collection);
             top->members_tail->value = value;
             object->size += 1;
         }
     }
 }
 
-static enum judo_result process_value(struct parser *parser, const struct judo_stream *js)
+static enum judo_result process_value(struct context *ctx, const struct judo_stream *js)
 {
     enum judo_result result = JUDO_RESULT_SUCCESS;
 
     if (js->token == JUDO_TOKEN_ARRAY_BEGIN)
     {
-        struct judo_array *array = judo_alloc(parser, sizeof(array[0])); // cppcheck-suppress misra-c2012-11.5
+        struct array *array = judo_alloc(ctx, sizeof(array[0])); // cppcheck-suppress misra-c2012-11.5
         if (array == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -167,15 +172,15 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             array->shared.type = JUDO_TYPE_ARRAY;
             array->shared.where = js->where;
-            link(parser, &array->shared);
+            link(ctx, &array->shared);
 
-            parser->stack[parser->depth].value = &array->shared;
-            parser->depth += 1;
+            ctx->stack[ctx->stack_depth].collection = &array->shared;
+            ctx->stack_depth += 1;
         }
     }
     else if (js->token == JUDO_TOKEN_OBJECT_BEGIN)
     {
-        struct judo_object *object = judo_alloc(parser, sizeof(object[0])); // cppcheck-suppress misra-c2012-11.5
+        struct object *object = judo_alloc(ctx, sizeof(object[0])); // cppcheck-suppress misra-c2012-11.5
         if (object == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -184,26 +189,26 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             object->shared.type = JUDO_TYPE_OBJECT;
             object->shared.where = js->where;
-            link(parser, &object->shared);
+            link(ctx, &object->shared);
 
-            parser->stack[parser->depth].value = &object->shared;
-            parser->depth += 1;
+            ctx->stack[ctx->stack_depth].collection = &object->shared;
+            ctx->stack_depth += 1;
         }
     }
     else if ((js->token == JUDO_TOKEN_ARRAY_END) ||
              (js->token == JUDO_TOKEN_OBJECT_END))
     {
-        assert(parser->depth > 0); // LCOV_EXCL_BR_LINE
-        struct compound *top = &parser->stack[parser->depth - 1];
-        top->value->where.length = (js->where.offset + js->where.length) - top->value->where.offset;
-        top->value = NULL;
+        assert(ctx->stack_depth > 0); // LCOV_EXCL_BR_LINE
+        struct parse_stack *top = &ctx->stack[ctx->stack_depth - 1];
+        top->collection->where.length = (js->where.offset + js->where.length) - top->collection->where.offset;
+        top->collection = NULL;
         top->elements_tail = NULL;
         top->members_tail = NULL;
-        parser->depth -= 1;
+        ctx->stack_depth -= 1;
     }
     else if (js->token == JUDO_TOKEN_NULL)
     {
-        struct judo_value *value = judo_alloc(parser, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
+        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
         if (value == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -212,13 +217,13 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             value->type = JUDO_TYPE_NULL;
             value->where = js->where;
-            link(parser, value);
+            link(ctx, value);
         }
     }
     else if ((js->token == JUDO_TOKEN_TRUE) ||
              (js->token == JUDO_TOKEN_FALSE))
     {
-        struct judo_boolean *boolean = judo_alloc(parser, sizeof(boolean[0])); // cppcheck-suppress misra-c2012-11.5
+        struct boolean *boolean = judo_alloc(ctx, sizeof(boolean[0])); // cppcheck-suppress misra-c2012-11.5
         if (boolean == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -228,12 +233,12 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
             boolean->shared.type = JUDO_TYPE_BOOL;
             boolean->shared.where = js->where;
             boolean->value = (js->token == JUDO_TOKEN_TRUE) ? (uint8_t)1 : (uint8_t)0;
-            link(parser, &boolean->shared);
+            link(ctx, &boolean->shared);
         }
     }
     else if (js->token == JUDO_TOKEN_NUMBER)
     {
-        struct judo_value *value = judo_alloc(parser, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
+        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
         if (value == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -242,12 +247,12 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             value->type = JUDO_TYPE_NUMBER;
             value->where = js->where;
-            link(parser, value);
+            link(ctx, value);
         }
     }
     else if (js->token == JUDO_TOKEN_STRING)
     {
-        struct judo_value *value = judo_alloc(parser, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
+        judo_value *value = judo_alloc(ctx, sizeof(value[0])); // cppcheck-suppress misra-c2012-11.5
         if (value == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -256,19 +261,19 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
         {
             value->type = JUDO_TYPE_STRING;
             value->where = js->where;
-            link(parser, value);
+            link(ctx, value);
         }
     }
     else if (js->token == JUDO_TOKEN_OBJECT_NAME)
     {
-        assert(parser->depth > 0); // LCOV_EXCL_BR_LINE
+        assert(ctx->stack_depth > 0); // LCOV_EXCL_BR_LINE
 
         // There must be an object being parsed to have received this value.
-        struct compound *top = &parser->stack[parser->depth - 1];
-        assert(top->value->type == (uint8_t)JUDO_TYPE_OBJECT); // LCOV_EXCL_BR_LINE
+        struct parse_stack *top = &ctx->stack[ctx->stack_depth - 1];
+        assert(top->collection->type == (uint8_t)JUDO_TYPE_OBJECT); // LCOV_EXCL_BR_LINE
 
         // Allocate a structure to represent the object member.
-        struct judo_member *member = judo_alloc(parser, sizeof(member[0])); // cppcheck-suppress misra-c2012-11.5
+        judo_member *member = judo_alloc(ctx, sizeof(member[0])); // cppcheck-suppress misra-c2012-11.5
         if (member == NULL)
         {
             result = JUDO_RESULT_OUT_OF_MEMORY;
@@ -279,7 +284,7 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
             member->name = js->where;
 
             // Link the object name into the linked list.
-            struct judo_object *object = to_object(top->value);
+            struct object *object = to_object(top->collection);
             if (object->members == NULL)
             {
                 assert(top->members_tail == NULL); // LCOV_EXCL_BR_LINE
@@ -301,7 +306,7 @@ static enum judo_result process_value(struct parser *parser, const struct judo_s
     return result;
 }
 
-enum judo_result judo_parse(const char *source, int32_t length, struct judo_value **root, struct judo_error *error, void *user_data, judo_memfunc memfunc) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+enum judo_result judo_parse(const char *source, int32_t length, judo_value **root, struct judo_error *error, void *udata, judo_memfunc memfunc) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
     enum judo_result result;
 
@@ -322,9 +327,9 @@ enum judo_result judo_parse(const char *source, int32_t length, struct judo_valu
     else
     {
         struct judo_stream stream = {0};
-        struct parser parser = {
+        struct context ctx = {
             .string = source,
-            .user_data = user_data,
+            .udata = udata,
             .memfunc = memfunc,
         };
 
@@ -333,7 +338,7 @@ enum judo_result judo_parse(const char *source, int32_t length, struct judo_valu
             result = judo_scan(&stream, source, length);
             if (result == JUDO_RESULT_SUCCESS)
             {
-                result = process_value(&parser, &stream);
+                result = process_value(&ctx, &stream);
             }
 
             if ((result != JUDO_RESULT_SUCCESS) || (stream.token == JUDO_TOKEN_EOF))
@@ -365,23 +370,23 @@ enum judo_result judo_parse(const char *source, int32_t length, struct judo_valu
             }
 
             // Use the result code from the scan operation, not the free operation.
-            (void)judo_free(parser.root, user_data, memfunc);
-            parser.root = NULL;
+            (void)judo_free(ctx.root, udata, memfunc);
+            ctx.root = NULL;
         }
 
-        *root = parser.root;
+        *root = ctx.root;
     }
 
     return result;
 }
 
-enum judo_result judo_free(struct judo_value *root, void *user_data, judo_memfunc memfunc)
+enum judo_result judo_free(judo_value *root, void *udata, judo_memfunc memfunc)
 {
     struct freestack
     {
-        struct judo_value *value;
-        struct judo_value *token;
-        struct judo_member *member;
+        judo_value *value;
+        judo_value *element;
+        judo_member *member;
     };
 
     enum judo_result result = JUDO_RESULT_SUCCESS;
@@ -402,24 +407,24 @@ enum judo_result judo_free(struct judo_value *root, void *user_data, judo_memfun
         while (depth > 0)
         {
             struct freestack *top = &stack[depth - 1];
-            if (top->token != NULL)
+            if (top->element != NULL)
             {
-                struct judo_value *next = judo_next(top->token);
+                judo_value *next = judo_next(top->element);
                 if (next == NULL)
                 {
-                    top->value = top->token;
+                    top->value = top->element;
                 }
                 else
                 {
-                    stack[depth].value = top->token;
+                    stack[depth].value = top->element;
                     depth += 1;
                 }
-                top->token = next;
+                top->element = next;
             }
             else if (top->member != NULL)
             {
-                struct judo_member *member = top->member;
-                struct judo_member *next = judo_membnext(member);
+                judo_member *member = top->member;
+                judo_member *next = judo_membnext(member);
 
                 if (next == NULL)
                 {
@@ -431,7 +436,7 @@ enum judo_result judo_free(struct judo_value *root, void *user_data, judo_memfun
                     depth += 1;
                 }
 
-                (void)memfunc(user_data, member, sizeof(member[0]));
+                (void)memfunc(udata, member, sizeof(member[0]));
                 top->member = next;
             }
             else if (top->value == NULL)
@@ -440,9 +445,9 @@ enum judo_result judo_free(struct judo_value *root, void *user_data, judo_memfun
             }
             else
             {
-                struct judo_value *token;
-                struct judo_member *member;
-                struct judo_value *value = top->value;
+                judo_value *element;
+                judo_member *member;
+                judo_value *value = top->value;
                 assert(value != NULL); // LCOV_EXCL_BR_LINE
                 
                 (void)memset(top, 0, sizeof(top[0]));
@@ -455,21 +460,21 @@ enum judo_result judo_free(struct judo_value *root, void *user_data, judo_memfun
                 case JUDO_TYPE_NULL:
                 case JUDO_TYPE_STRING:
                 case JUDO_TYPE_NUMBER:
-                    (void)memfunc(user_data, value, sizeof(struct judo_value));
+                    (void)memfunc(udata, value, sizeof(judo_value));
                     break;
 
                 case JUDO_TYPE_BOOL:
-                    (void)memfunc(user_data, value, sizeof(struct judo_boolean));
+                    (void)memfunc(udata, value, sizeof(struct boolean));
                     break;
 
                 case JUDO_TYPE_ARRAY:
-                    token = judo_first(value);
-                    if (token != NULL)
+                    element = judo_first(value);
+                    if (element != NULL)
                     {
-                        stack[depth].token = token;
+                        stack[depth].element = element;
                         depth += 1;
                     }
-                    (void)memfunc(user_data, value, sizeof(struct judo_array));
+                    (void)memfunc(udata, value, sizeof(struct array));
                     break;
 
                 case JUDO_TYPE_OBJECT:
@@ -479,7 +484,7 @@ enum judo_result judo_free(struct judo_value *root, void *user_data, judo_memfun
                         stack[depth].member = member;
                         depth += 1;
                     }
-                    (void)memfunc(user_data, value, sizeof(struct judo_object));
+                    (void)memfunc(udata, value, sizeof(struct object));
                     break;
 
                 // LCOV_EXCL_START
@@ -495,7 +500,7 @@ enum judo_result judo_free(struct judo_value *root, void *user_data, judo_memfun
     return result;
 }
 
-enum judo_type judo_gettype(const struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+enum judo_type judo_gettype(const judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
     enum judo_type type;
     if (value == NULL)
@@ -509,9 +514,9 @@ enum judo_type judo_gettype(const struct judo_value *value) // cppcheck-suppress
     return type;
 }
 
-struct judo_value *judo_first(struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+judo_value *judo_first(judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    struct judo_value *first;
+    judo_value *first;
     if ((value == NULL) || (value->type != (uint8_t)JUDO_TYPE_ARRAY))
     {
         first = NULL;
@@ -523,9 +528,9 @@ struct judo_value *judo_first(struct judo_value *value) // cppcheck-suppress mis
     return first;
 }
 
-struct judo_value *judo_next(struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+judo_value *judo_next(judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    struct judo_value *next;
+    judo_value *next;
     if (value == NULL)
     {
         next = NULL;
@@ -537,9 +542,9 @@ struct judo_value *judo_next(struct judo_value *value) // cppcheck-suppress misr
     return next;
 }
 
-struct judo_member *judo_membfirst(struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+judo_member *judo_membfirst(judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    struct judo_member *member;
+    judo_member *member;
     if ((value == NULL) || (value->type != (uint8_t)JUDO_TYPE_OBJECT))
     {
         member = NULL;
@@ -551,9 +556,9 @@ struct judo_member *judo_membfirst(struct judo_value *value) // cppcheck-suppres
     return member;
 }
 
-struct judo_member *judo_membnext(struct judo_member *member) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+judo_member *judo_membnext(judo_member *member) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    struct judo_member *next;
+    judo_member *next;
     if (member == NULL)
     {
         next = NULL;
@@ -565,7 +570,7 @@ struct judo_member *judo_membnext(struct judo_member *member) // cppcheck-suppre
     return next;
 }
 
-bool judo_tobool(struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+bool judo_tobool(judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
     bool b = false;
     if (value != NULL)
@@ -578,7 +583,7 @@ bool judo_tobool(struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 
     return b;
 }
 
-struct judo_span judo_name2span(const struct judo_member *member) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+struct judo_span judo_name2span(const judo_member *member) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
     struct judo_span span = {0};
     if (member != NULL)
@@ -588,7 +593,7 @@ struct judo_span judo_name2span(const struct judo_member *member) // cppcheck-su
     return span;
 }
 
-int32_t judo_len(struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+int32_t judo_len(judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
     int32_t length;
     if (value != NULL)
@@ -613,9 +618,9 @@ int32_t judo_len(struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 
     return length;
 }
 
-struct judo_value *judo_membvalue(struct judo_member *member) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+judo_value *judo_membvalue(judo_member *member) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    struct judo_value *value;
+    judo_value *value;
     if (member == NULL)
     {
         value = NULL;
@@ -627,7 +632,7 @@ struct judo_value *judo_membvalue(struct judo_member *member) // cppcheck-suppre
     return value;
 }
 
-struct judo_span judo_value2span(const struct judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
+struct judo_span judo_value2span(const judo_value *value) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
     struct judo_span span = {0};
     if (value != NULL)
