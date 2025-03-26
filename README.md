@@ -26,9 +26,8 @@ These features are already part of the JSON5 standard.
 ## Lightweight Interface
 
 Judo is split into two interfaces: the scanner and (optional) parser.
-[Judo's scanner](https://railgunlabs.com/judo/manual/api/judo/) consists of only **three functions**, all of which are idempotent.
+[Judo's scanner](https://railgunlabs.com/judo/manual/api/scanner/) consists of only **three functions**, all of which are idempotent.
 The Judo parser builds an in-memory tree and relies on dynamic memory allocation via a custom memory allocator you provide.
-Both API's are thread-safe.
 
 ## Robust Processing
 
