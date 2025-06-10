@@ -102,7 +102,8 @@ static void compulate_source_location(const char *input, int32_t location, int *
     {
         if (at < location + 1)
         {
-            if (memcmp(&input[at], "\r\n", 2) == 0)
+            if (input[at+0] == '\r' &&
+                input[at+1] == '\n')
             {
                 (*line) += 1;
                 (*column) = 1;

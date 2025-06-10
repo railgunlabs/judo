@@ -1105,7 +1105,7 @@ static enum judo_result scan_string(const struct scanner *scanner, struct token 
                     index += 1; // consume 'x'
                     while (is_bounded(string, scanner->string_length, index, 1))
                     {
-                        if (!judo_isxdigit(string[index]) || (digit_count == 2))
+                        if ((digit_count == 2) || !judo_isxdigit(string[index]))
                         {
                             break;
                         }
@@ -1123,7 +1123,7 @@ static enum judo_result scan_string(const struct scanner *scanner, struct token 
                     index += 1; // consume 'u'
                     while (is_bounded(string, scanner->string_length, index, 1))
                     {
-                        if (!judo_isxdigit(string[index]) || (digit_count == 4))
+                        if ((digit_count == 4) || !judo_isxdigit(string[index]))
                         {
                             break;
                         }
@@ -1153,7 +1153,7 @@ static enum judo_result scan_string(const struct scanner *scanner, struct token 
                                 if (is_match(&string[index], "\\u", 2))
                                 {
                                     index += 2; // skip the '\u' sequence
-                                    while (judo_isxdigit(string[index]) && (digit_count < 4))
+                                    while ((digit_count < 4) && judo_isxdigit(string[index]))
                                     {
                                         digits[digit_count] = (char)string[index];
                                         digit_count += 1;
@@ -1555,7 +1555,7 @@ static enum judo_result scan_unicode_escape(const struct scanner *scanner, int32
         index += 1; // skip the 'u'
 
         int32_t digit_count = 0;
-        while (judo_isxdigit(scanner->string[index]) && (digit_count < 4))
+        while ((digit_count < 4) && judo_isxdigit(scanner->string[index]))
         {
             digit_count += 1;
             index += 1;
