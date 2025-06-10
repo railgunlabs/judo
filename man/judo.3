@@ -1,4 +1,4 @@
-.TH "JUDO" "3" "Mar 5th 2025" "Judo 1.0.0-rc4"
+.TH "JUDO" "3" "Jun 10th 2025" "Judo 1.0.0-rc5"
 .SH NAME
 judo.h \- embeddable JSON Parser
 .SH LIBRARY
@@ -47,7 +47,7 @@ for (;;) {
             // successfully completed scanning
         }
     } else {
-        // an error occured
+        // an error occurred
     }
 }
 .EE
@@ -63,11 +63,11 @@ The \f[I]where\f[R] field describes the span of UTF-8 code units where the token
 In the case of literal values, like numbers and strings, the span of code units defines its lexeme.
 .PP
 The \f[I]error\f[R] field is a null-terminated UTF-8 encoded string that describes the details of any error in US English.
-You’ll know an error occurred because \f[B]judo_scan\f[R](3) will return a value other than \f[B]JUDO_RESULT_SUCCESS\f[R].
+You'll know an error occurred because \f[B]judo_scan\f[R](3) will return a value other than \f[B]JUDO_RESULT_SUCCESS\f[R].
 .SS Processing tokens
 .PP
 Arrays and objects consist of start/end token pairs.
-In well-formed JSON, each “start” token will always be matched by an “end” token.
+In well-formed JSON, each "start" token will always be matched by an "end" token.
 In malformed JSON, the scanner will report an error if there is a mismatch.
 .PP
 Elements of an array are returned as sequential values.
@@ -87,8 +87,8 @@ judo_numberify(&source[stream.where.offset], stream.where.length, &number);
 .SS Extracting string values
 .PP
 When a token is a string or object name the decoded string value can be obtained with the \f[B]judo_stringify\f[R](3) function.
-This function accepts a buffer to write the decoded string data to, as well as a “length” parameter for the buffer.
-The length parameter represents the buffer’s capacity on input.
+This function accepts a buffer to write the decoded string data to, as well as a "length" parameter for the buffer.
+The length parameter represents the buffer's capacity on input.
 The implementation will update this parameter with the number of code units written to the buffer on output.
 .PP
 .in +4n
@@ -168,7 +168,7 @@ T}
 .TE
 .SS Parser
 The Judo parser builds an in-memory tree structure from JSON source text.
-The “root” of the tree is the top-level JSON value, which is often an object or array.
+The "root" of the tree is the top-level JSON value, which is often an object or array.
 From the root, you can traverse the tree and inspect its values.
 .PP
 The \f[B]judo_parse\f[R](3) function parses JSON source text, encoded as UTF-8, into a tree.
@@ -270,7 +270,7 @@ if (judo_gettype(root) == JUDO_TYPE_ARRAY) {
     struct judo_value *token = judo_first(root);
     while (token != NULL) {
         // Process the current token, then
-        // grab to the next token.
+        // grab the next token.
         token = judo_next(token);
     }
 }
@@ -293,7 +293,7 @@ if (judo_gettype(root) == JUDO_TYPE_OBJECT) {
     struct judo_member *member = judo_membfirst(root);
     while (member != NULL) {
         // Process the current member, then
-        // grab to the next member.
+        // grab the next member.
         member = judo_membnext(member);
     }
 }
