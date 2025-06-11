@@ -114,7 +114,7 @@ static struct boolean *to_boolean(void *value)
     return boolean;
 }
 
-static void link(struct context *ctx, judo_value *value)
+static void track(struct context *ctx, judo_value *value)
 {
     // LCOV_EXCL_START
     assert(ctx != NULL);
@@ -127,8 +127,8 @@ static void link(struct context *ctx, judo_value *value)
         ctx->root = value;
     }
 
-    // Check if processing an token of an array or a member of an object.
-    // If so, then link the JSON value with the array/object.
+    // Check if processing a token of an array or a member of an object.
+    // If so, then associate the JSON value with the array/object.
     if (ctx->stack_depth > 0)
     {
         struct parse_stack *top = &ctx->stack[ctx->stack_depth - 1];
@@ -178,7 +178,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
         {
             array->descriptor.type = JUDO_TYPE_ARRAY;
             array->descriptor.where = js->where;
-            link(ctx, &array->descriptor);
+            track(ctx, &array->descriptor);
 
             ctx->stack[ctx->stack_depth].collection = &array->descriptor;
             ctx->stack_depth += 1;
@@ -196,7 +196,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
         {
             object->descriptor.type = JUDO_TYPE_OBJECT;
             object->descriptor.where = js->where;
-            link(ctx, &object->descriptor);
+            track(ctx, &object->descriptor);
 
             ctx->stack[ctx->stack_depth].collection = &object->descriptor;
             ctx->stack_depth += 1;
@@ -224,7 +224,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
         {
             value->type = JUDO_TYPE_NULL;
             value->where = js->where;
-            link(ctx, value);
+            track(ctx, value);
         }
     }
     else if ((js->token == JUDO_TOKEN_TRUE) ||
@@ -240,7 +240,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
             boolean->descriptor.type = JUDO_TYPE_BOOL;
             boolean->descriptor.where = js->where;
             boolean->value = (js->token == JUDO_TOKEN_TRUE) ? (uint8_t)1 : (uint8_t)0;
-            link(ctx, &boolean->descriptor);
+            track(ctx, &boolean->descriptor);
         }
     }
     else if (js->token == JUDO_TOKEN_NUMBER)
@@ -254,7 +254,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
         {
             value->type = JUDO_TYPE_NUMBER;
             value->where = js->where;
-            link(ctx, value);
+            track(ctx, value);
         }
     }
     else if (js->token == JUDO_TOKEN_STRING)
@@ -268,7 +268,7 @@ static enum judo_result process_value(struct context *ctx, const struct judo_str
         {
             value->type = JUDO_TYPE_STRING;
             value->where = js->where;
-            link(ctx, value);
+            track(ctx, value);
         }
     }
     else if (js->token == JUDO_TOKEN_OBJECT_NAME)
