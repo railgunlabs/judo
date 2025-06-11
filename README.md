@@ -48,7 +48,7 @@ The complete compliance table with deviations is [documented here](https://railg
 ## Extensively Tested
 
 * Unit tests with 100% branch coverage
-* Fuzz tests
+* Fuzz tests (libFuzzer and AFL++)
 * Out-of-memory tests
 * Static analysis
 * Valgrind analysis
