@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 //! [scanner_process_stdin]
     if (json == NULL)
     {
-        fprintf(stderr, "error: failed to read stdin");
+        fprintf(stderr, "error: failed to read stdin\n");
         return 2;
     }
 

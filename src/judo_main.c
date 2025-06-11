@@ -288,7 +288,7 @@ static void judo_main(const struct program_options *options)
     char *dynbuf = judo_readstdin(&dynbuf_length);
     if (dynbuf == NULL)
     {
-        fprintf(stderr, "error: failed to read stdin");
+        fprintf(stderr, "error: failed to read stdin\n");
         exit(2);
     }
 
@@ -299,7 +299,7 @@ static void judo_main(const struct program_options *options)
     {
         if (result == JUDO_RESULT_OUT_OF_MEMORY)
         {
-            fprintf(stderr, "error: memory allocation failed");
+            fprintf(stderr, "error: memory allocation failed\n");
             free(dynbuf);
             exit(2);
         }
