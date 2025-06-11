@@ -55,17 +55,27 @@ char *judo_readstdin(size_t *size)
         }
 
         const size_t buffer_length = (size_t)bytes_read;
-        if ((dynbuf_length + buffer_length) >= dynbuf_capacity)
+        const size_t new_capacity = dynbuf_length + buffer_length;
+
+        // Limit the input to 10 megabytes to avoid integer overflow elsewhere in the implementation.
+        // This also ensures the buffer capacity remains under the maximum signed 32-bit integer.
+        if (new_capacity >= 1024 * 1024 * 10)
         {
-            size_t newcap = dynbuf_length + buffer_length;
-            char *newbuf = realloc(dynbuf, newcap);
-            if (newbuf == NULL)
+            fprintf(stderr, "error: input too large\n");
+            free(dynbuf);
+            return NULL;
+        }
+
+        if (new_capacity >= dynbuf_capacity)
+        {
+            char *tmpbuf = realloc(dynbuf, new_capacity);
+            if (tmpbuf == NULL)
             {
                 free(dynbuf);
                 return NULL;
             }
-            dynbuf = newbuf;
-            dynbuf_capacity = newcap;
+            dynbuf = tmpbuf;
+            dynbuf_capacity = new_capacity;
         }
 
         memcpy(&dynbuf[dynbuf_length], buffer, buffer_length);
