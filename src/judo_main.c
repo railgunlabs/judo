@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
         if (strcmp(arg, "-v") == 0 ||
             strcmp(arg, "--version") == 0)
         {
-            puts("1.0.0-rc5");
+            puts("1.0.0");
             exit(0);
         }
 
