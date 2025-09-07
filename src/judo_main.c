@@ -3,8 +3,8 @@
  *  Copyright (c) 2025 Railgun Labs, LLC
  *
  *  This software is dual-licensed: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License version 3
- *  as published by the Free Software Foundation. For the terms of this
+ *  it under the terms of the GNU General Public License version 3 as
+ *  published by the Free Software Foundation. For the terms of this
  *  license, see <https://www.gnu.org/licenses/>.
  *
  *  Alternatively, you can license this software under a proprietary
@@ -393,9 +393,9 @@ int main(int argc, char *argv[])
             puts("Judo website and online documentation: <https://railgunlabs.com/judo/");
             puts("Judo repository: <https://github.com/railgunlabs/judo/");
             puts("");
-            puts("Judo is Free Software distributed under the GNU Affero General Public");
-            puts("License version 3 as published by the Free Software Foundation. You");
-            puts("may also license Judo under a commercial license, as set out at");
+            puts("Judo is Free Software distributed under the GNU General Public License");
+            puts("version 3 as published by the Free Software Foundation. You may also");
+            puts("license Judo under a commercial license, as set out at");
             puts("<https://railgunlabs.com/judo/license/>.");
             exit(0);
         }

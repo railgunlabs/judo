@@ -3,8 +3,8 @@
  *  Copyright (c) 2025 Railgun Labs, LLC
  *
  *  This software is dual-licensed: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License version 3
- *  as published by the Free Software Foundation. For the terms of this
+ *  it under the terms of the GNU General Public License version 3 as
+ *  published by the Free Software Foundation. For the terms of this
  *  license, see <https://www.gnu.org/licenses/>.
  *
  *  Alternatively, you can license this software under a proprietary

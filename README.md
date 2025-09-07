@@ -95,7 +95,7 @@ The pull request tab is enabled because GitHub does not provide a mechanism to d
 
 ## License
 
-Judo is dual-licensed under the GNU Affero General Public License version 3 (AGPL v3) and a proprietary license, which can be purchased from [Railgun Labs](https://railgunlabs.com/judo/license/).
+Judo is dual-licensed under the GNU General Public License version 3 (GPL v3) and a proprietary license, which can be purchased from [Railgun Labs](https://railgunlabs.com/judo/license/).
 
 The unit tests are **not** published.
 Access to them is granted exclusively to commercial licensees.
