@@ -1,2 +1,5 @@
-file(GLOB MANS "*.3")
-install(FILES ${MANS} DESTINATION man/man3 COMPONENT doc)
+include(GNUInstallDirs)
+file(GLOB MANS1 "*.1")
+file(GLOB MANS3 "*.3")
+install(FILES ${MANS1} DESTINATION "${CMAKE_INSTALL_MANDIR}/man1" COMPONENT doc)
+install(FILES ${MANS3} DESTINATION "${CMAKE_INSTALL_MANDIR}/man3" COMPONENT doc)

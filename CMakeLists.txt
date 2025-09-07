@@ -151,6 +151,10 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/judo_config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/judo_config.h" @ONLY)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/judo_config.h PROPERTIES GENERATED 1)
 
+# Install CMake package files.
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/JudoConfig.cmake DESTINATION cmake)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/JudoConfigVersion.cmake DESTINATION cmake)
+
 # Add all projects.
 add_subdirectory(man)
 add_subdirectory(src)

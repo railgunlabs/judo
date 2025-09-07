@@ -32,5 +32,3 @@ else ()
 endif ()
 
 install(TARGETS judo ARCHIVE DESTINATION lib PUBLIC_HEADER DESTINATION include)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/JudoConfig.cmake DESTINATION cmake)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/JudoConfigVersion.cmake DESTINATION cmake)
