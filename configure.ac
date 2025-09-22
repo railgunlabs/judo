@@ -1,6 +1,6 @@
 # Specify the project and version + the minimum automake version required.
 AC_PREREQ(2.66)
-AC_INIT([judo], [1.0.1])
+AC_INIT([judo], [1.1.0])
 
 # Instruct automake to place all intermediary files into a seperate directory.
 # If this isn't specified, then it will pollute the main directory.
