@@ -22,7 +22,13 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#define INVALID_CHARACTER UNICHAR_C(0x110000)
+#define BAD_CHARACTER_ENCODING UNICHAR_C(0x110000)
+#define INPUT_TOO_LARGE UNICHAR_C(0x110001)
+
+// Limit the maximum input size to 1 GB.
+#ifndef JUDO_MAXIMUM_INPUT_SIZE
+#define JUDO_MAXIMUM_INPUT_SIZE (int32_t)0x40000000
+#endif
 
 // Primitive JSON and JSON5 tokens.
 enum token_tag
@@ -149,6 +155,15 @@ static enum judo_result bad_encoding(const struct scanner *scanner, int32_t curs
     return JUDO_RESULT_ILLEGAL_BYTE_SEQUENCE;
 }
 
+static enum judo_result bad_input_size(struct judo_stream *stream)
+{
+    stream->where = (struct judo_span){JUDO_MAXIMUM_INPUT_SIZE, 0};
+    stream->token = JUDO_TOKEN_INVALID;
+    stream->s_state[stream->s_stack] = SCAN_STATE_ENCODING_ERROR;
+    (void)memcpy(stream->error, "maximum input size exceeded", 28);
+    return JUDO_RESULT_INPUT_TOO_LARGE;
+}
+
 static enum judo_result max_nesting_depth(const struct scanner *scanner)
 {
     struct judo_stream *stream = scanner->stream;
@@ -165,12 +180,19 @@ static bool is_bounded(const uint8_t *string, int32_t length, int32_t cursor, in
 
     if (length < 0)
     {
-        for (int32_t i = 0; i < byte_count; i++)
+        if (cursor >= JUDO_MAXIMUM_INPUT_SIZE)
         {
-            if ((char)string[cursor + i] == '\0')
+            bounded = false;
+        }
+        else
+        {
+            for (int32_t i = 0; i < byte_count; i++)
             {
-                bounded = false;
-                break;
+                if ((char)string[cursor + i] == '\0')
+                {
+                    bounded = false;
+                    break;
+                }
             }
         }
     }
@@ -189,7 +211,7 @@ static bool is_bounded(const uint8_t *string, int32_t length, int32_t cursor, in
 
 static unichar utf8_decode(const uint8_t *string, int32_t length, int32_t cursor, int32_t *byte_count)
 {
-    unichar codepoint = INVALID_CHARACTER;
+    unichar codepoint = BAD_CHARACTER_ENCODING;
     if (byte_count != NULL)
     {
         *byte_count = 0;
@@ -302,6 +324,13 @@ static unichar utf8_decode(const uint8_t *string, int32_t length, int32_t cursor
             {
                 seqlen = 0;
             }
+        }
+
+        // Verify the input is bounded.
+        if ((cursor + seqlen) >= JUDO_MAXIMUM_INPUT_SIZE)
+        {
+            codepoint = INPUT_TOO_LARGE;
+            seqlen = 0;
         }
 
         // Verify the UTF-8 sequence is valid.
@@ -1203,9 +1232,14 @@ static enum judo_result scan_string(const struct scanner *scanner, struct token 
             // Consume a UTF-8 code point.
             int32_t byte_count;
             codepoint = utf8_decode(string, scanner->string_length, index, &byte_count);
-            if (codepoint == INVALID_CHARACTER)
+            if (codepoint == BAD_CHARACTER_ENCODING)
             {
                 status = bad_encoding(scanner, index, 1);
+            }
+            else if (codepoint == INPUT_TOO_LARGE)
+            {
+                struct judo_stream *s = scanner->stream; // Temporary variable for MISRA conformance.
+                status = bad_input_size(s);
             }
             else
             {
@@ -1813,9 +1847,14 @@ static enum judo_result scan_multiline_comment(const struct scanner *scanner, in
         index += seqlen;
     } while (seqlen > 0);
 
-    if (codepoint == INVALID_CHARACTER)
+    if (codepoint == BAD_CHARACTER_ENCODING)
     {
         result = bad_encoding(scanner, index, 1);
+    }
+    else if (codepoint == INPUT_TOO_LARGE)
+    {
+        struct judo_stream *s = scanner->stream; // Temporary variable for MISRA conformance.
+        result = bad_input_size(s);
     }
     else if (*byte_count == 0)
     {
@@ -1928,8 +1967,12 @@ static enum judo_result peek(struct scanner *scanner, struct token *token)
         const unichar codepoint = utf8_decode(scanner->string, scanner->string_length, scanner->index, &byte_count);
         switch (codepoint)
         {
-        case INVALID_CHARACTER:
+        case BAD_CHARACTER_ENCODING:
             status = bad_encoding(scanner, scanner->index, 1);
+            break;
+
+        case INPUT_TOO_LARGE:
+            status = bad_input_size(scanner->stream);
             break;
 
         case UNICHAR_C('\0'):
@@ -2386,9 +2429,24 @@ static enum judo_result parse_root(struct scanner *scanner)
 
 enum judo_result judo_scan(struct judo_stream *stream, const char *source, int32_t length) // cppcheck-suppress misra-c2012-8.7 ; Public function must have external linkage.
 {
-    enum judo_result status = JUDO_RESULT_INVALID_OPERATION;
+    enum judo_result status = JUDO_RESULT_SUCCESS;
 
-    if ((stream != NULL) && (source != NULL))
+    if (stream == NULL)
+    {
+        status = JUDO_RESULT_INVALID_OPERATION;
+    }
+
+    if (source == NULL)
+    {
+        status = JUDO_RESULT_INVALID_OPERATION;
+    }
+
+    if (length >= JUDO_MAXIMUM_INPUT_SIZE)
+    {
+        status = bad_input_size(stream);
+    }
+
+    if (status == JUDO_RESULT_SUCCESS)
     {
         struct scanner scanner;
         scanner.stream = stream;

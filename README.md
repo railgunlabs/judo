@@ -31,9 +31,11 @@ The Judo parser builds an in-memory tree and relies on dynamic memory allocation
 
 ## Robust Processing
 
-Judo is robust.
-It can process both null and non-null-terminated UTF-8 encoded strings.
-It can detect malformed UTF-8 sequences and problematic conditions not fully specified in the JSON specification, such as mismatched UTF-16 surrogate pairs.
+Judo supports processing both null and non-null-terminated UTF-8 encoded strings.
+It detects malformed UTF-8 sequences and problematic conditions not fully specified in the JSON specification, such as mismatched UTF-16 surrogate pairs.
+
+Judo parses JSON inputs up to 1 GB in size.
+Larger inputs are safely detected and reported as exceeding the supported limit.
 
 ## MISRA C:2012 Conformance
 
@@ -50,6 +52,7 @@ The complete compliance table with deviations is [documented here](https://railg
 * Unit tests with 100% branch coverage
 * Fuzz tests (libFuzzer and AFL++)
 * Out-of-memory tests
+* Overflow tests
 * Static analysis
 * Valgrind analysis
 * Code sanitizers (UBSAN, ASAN, and MSAN)
