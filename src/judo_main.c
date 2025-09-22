@@ -54,7 +54,7 @@ static int32_t decode_utf8(const char *string, uint32_t *scalar)
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,  
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
         3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-        4, 4, 4, 4, 4,
+        4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
     const uint8_t *bytes = (const uint8_t *)string;
     const int32_t bytes_needed = (int32_t)unsafe_utf8_sequence_lengths[bytes[0]];

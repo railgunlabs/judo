@@ -157,7 +157,7 @@ static enum judo_result bad_encoding(const struct scanner *scanner, int32_t curs
 
 static enum judo_result bad_input_size(struct judo_stream *stream)
 {
-    stream->where = (struct judo_span){JUDO_MAXIMUM_INPUT_SIZE, 0};
+    stream->where = (struct judo_span){0, 0};
     stream->token = JUDO_TOKEN_INVALID;
     stream->s_state[stream->s_stack] = SCAN_STATE_ENCODING_ERROR;
     (void)memcpy(stream->error, "maximum input size exceeded", 28);
