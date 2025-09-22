@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
             puts("Exit status:");
             puts("  0  if OK,");
             puts("  1  if the JSON input is malformed,");
-            puts("  2  if an error occured while processing the JSON input,");
+            puts("  2  if an error occurred while processing the JSON input,");
             puts("  3  if an invalid command-line option is specified.");
             puts("");
             puts("Judo website and online documentation: <https://railgunlabs.com/judo/");
