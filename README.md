@@ -7,6 +7,9 @@
 **Judo** is a JSON and JSON5 parser with MISRA C:2012 conformance.
 It is written in C99 with no external dependencies.
 
+[![Documentation](https://img.shields.io/badge/Documentation-Online-blue)](https://railgunlabs.com/judo/manual/)&nbsp;
+[![License](https://img.shields.io/badge/Dual_Licensed-GPLv3-dark_green)](https://railgunlabs.com/judo/license/)
+
 ## Choose Your Standard
 
 Judo offers three different JSON standards to choose from:
@@ -89,10 +92,12 @@ or [CMake](https://cmake.org/).
 
 ## Support
 
-* [Documentation](https://railgunlabs.com/judo/manual/)
+Support is available via
+
+* [Online Documentation](https://railgunlabs.com/judo/manual/)
 * [Premium Support](https://railgunlabs.com/services/)
 
-Submit patches and bug reports to [railgunlabs.com/contribute](https://railgunlabs.com/contribute/).
+You may submit code patches and unsolicited bug reports to [railgunlabs.com/contribute](https://railgunlabs.com/contribute/).
 Do **not** open a pull request.
 The pull request tab is enabled because GitHub does not provide a mechanism to disable it.
 
@@ -103,5 +108,5 @@ Judo is available under the following licenses:
 * [GNU General Public License version 3 (GPL v3)](LICENSE)
 * [Commerical License](https://railgunlabs.com/judo/license/)
 
-The unit tests are **not** published.
+The unit tests are not public.
 Access to them is granted exclusively to commercial licensees.
