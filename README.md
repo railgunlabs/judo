@@ -106,7 +106,7 @@ The pull request tab is enabled because GitHub does not provide a mechanism to d
 Judo is available under the following licenses:
 
 * [GNU General Public License version 3 (GPL v3)](LICENSE)
-* [Commerical License](https://railgunlabs.com/judo/license/)
+* [Commercial License](https://railgunlabs.com/judo/license/)
 
 The unit tests are not public.
 Access to them is granted exclusively to commercial licensees.
