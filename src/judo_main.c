@@ -390,8 +390,8 @@ int main(int argc, char *argv[])
             puts("  2  if an error occurred while processing the JSON input,");
             puts("  3  if an invalid command-line option is specified.");
             puts("");
-            puts("Judo website and online documentation: <https://railgunlabs.com/judo/");
-            puts("Judo repository: <https://github.com/railgunlabs/judo/");
+            puts("Judo website and online documentation: <https://railgunlabs.com/judo/>");
+            puts("Judo repository: <https://github.com/railgunlabs/judo/>");
             puts("");
             puts("Judo is Free Software distributed under the GNU General Public License");
             puts("version 3 as published by the Free Software Foundation. You may also");
